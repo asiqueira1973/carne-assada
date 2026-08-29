@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="receipt_scan">
+
+  <g id="receipt">
+    <path d="M56 108 H262 V420 C230 404 212 436 180 420 C148 404 130 436 98 420 C82 412 68 424 56 420 Z" fill="#FDF8F2" stroke="#E8A33D" stroke-width="6"></path>
+    <g id="abstract-lines">
+<rect x="58" y="176" width="120" height="14" rx="7" fill="#2B2118"></rect>
+<rect x="58" y="206" width="150" height="10" rx="5" fill="#2B2118"></rect>
+<rect x="116" y="236" width="84" height="10" rx="5" fill="#E8A33D"></rect>
+<rect x="58" y="266" width="132" height="10" rx="5" fill="#2B2118"></rect>
+<rect x="58" y="296" width="96" height="10" rx="5" fill="#2B2118"></rect>
+<rect x="58" y="326" width="140" height="10" rx="5" fill="#E8A33D"></rect>
+<rect x="58" y="356" width="110" height="10" rx="5" fill="#2B2118"></rect>
+<rect x="116" y="386" width="82" height="10" rx="5" fill="#2B2118"></rect>
+    </g>
+  </g>
+  <g id="phone">
+    <rect x="300" y="152" width="150" height="248" rx="30" fill="#2B2118"></rect>
+    <rect x="318" y="176" width="114" height="200" rx="18" fill="#FF6B35"></rect>
+    <rect x="352" y="162" width="46" height="8" rx="4" fill="#E8A33D"></rect>
+    <circle cx="375" cy="256" r="26" fill="#2B2118"></circle>
+    <circle cx="375" cy="256" r="12" fill="#E8A33D"></circle>
+  </g>
+  <g id="camera-brackets">
+    <path d="M44 200 V132 A24 24 0 0 1 68 108 H120" fill="none" stroke="#FF6B35" stroke-width="14" stroke-linecap="round"></path>
+    <path d="M276 200 V132 A24 24 0 0 0 252 108 H200" fill="none" stroke="#FF6B35" stroke-width="14" stroke-linecap="round"></path>
+    <path d="M44 336 V404 A24 24 0 0 0 68 428 H120" fill="none" stroke="#FF6B35" stroke-width="14" stroke-linecap="round"></path>
+    <path d="M276 336 V404 A24 24 0 0 1 252 428 H200" fill="none" stroke="#FF6B35" stroke-width="14" stroke-linecap="round"></path>
+  </g>
+
+</g>
+</svg>

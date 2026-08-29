@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="category_other">
+
+  <path d="M112 156 H400 V392 A48 48 0 0 1 352 440 H160 A48 48 0 0 1 112 392 Z" fill="#FF6B35"></path>
+  <rect x="96" y="132" width="320" height="60" rx="26" fill="#C1443A"></rect>
+  <path d="M256 132 C256 84 292 52 344 52 C344 100 308 132 256 132 Z" fill="#5FA83E"></path>
+
+</g>
+</svg>

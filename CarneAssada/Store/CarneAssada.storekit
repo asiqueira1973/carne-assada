@@ -1,0 +1,31 @@
+{
+  "identifier" : "CARNEASSADA",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "19.90",
+      "familyShareable" : false,
+      "internalID" : "CA0001",
+      "localizations" : [
+        {
+          "description" : "Fotografe a nota do mercado e o Carne Assada calcula quanto cada um deve. Pagamento único. Tudo que vier depois já está incluído.",
+          "displayName" : "Carne Assada Pro",
+          "locale" : "pt_BR"
+        }
+      ],
+      "productID" : "carne_assada_pro",
+      "referenceName" : "Carne Assada Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_storefront" : "BRA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

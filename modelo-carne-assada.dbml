@@ -1,0 +1,139 @@
+// Modelo de dados do app Carne Assada — gerado a partir da seção 7 do spec.md
+// Persistência real: SwiftData (store local, sem backend).
+// O DBML abaixo representa o mesmo modelo em formato relacional,
+// para visualização em dbdiagram.io.
+
+Table churrasco {
+  id uuid [pk]
+  nome texto [not null, default: 'Churrasco']
+  data_evento data [not null, note: 'default: data de hoje; hora ignorada']
+  status status_churrasco [not null, default: 'planejando']
+  qtd_adultos inteiro [not null, default: 0]
+  qtd_criancas inteiro [not null, default: 0]
+  qtd_vegetarianos inteiro [not null, default: 0, note: 'subconjunto de qtd_adultos, nao soma a ele (regra 11.3)']
+  qtd_nao_bebem_alcool inteiro [not null, default: 0, note: 'subconjunto de qtd_adultos']
+  duracao_horas inteiro [not null, default: 5]
+  descricao_livre texto [note: 'nulo quando o churrasco foi criado so com steppers, sem IA']
+  origem_parametros origem_dado [not null, default: 'manual']
+  criado_em datahora [not null]
+  atualizado_em datahora [not null]
+
+  Note: 'Um evento de churrasco. Exclusao hard delete, com cascata para todas as filhas.'
+}
+
+Table participante {
+  id uuid [pk]
+  churrasco_id uuid [not null]
+  nome texto [not null, note: 'unico dentro do churrasco, case-insensitive (7.10.1)']
+  e_crianca booleano [not null, default: false]
+  come_carne booleano [not null, default: true]
+  bebe_alcool booleano [not null, default: true, note: 'criança nasce com false e o campo fica bloqueado na UI']
+  ordem inteiro [not null, note: 'ordem de exibicao = ordem de cadastro']
+
+  Note: 'Quem foi ao churrasco. Nao e usuario do app: nao acessa nada, e apenas registro de dado.'
+}
+
+Table item_lista {
+  id uuid [pk]
+  churrasco_id uuid [not null]
+  categoria categoria_lista [not null]
+  nome texto [not null]
+  quantidade decimal [not null, note: 'sempre > 0 (7.10.4)']
+  unidade unidade_medida [not null]
+  comprado booleano [not null, default: false, note: 'marcacao do modo mercado']
+  origem origem_dado [not null, default: 'calculado']
+  ordem inteiro [not null]
+
+  Note: 'Item da lista de compras. Exclusao hard delete.'
+}
+
+Table compra {
+  id uuid [pk]
+  churrasco_id uuid [not null]
+  estabelecimento texto [note: 'nulo quando o modelo nao identifica o mercado ou a compra foi lancada a mao']
+  data_compra data [not null, note: 'default: data de hoje']
+  valor_total_informado decimal [note: 'total lido da nota; nulo quando nao foi possivel ler (regra 11.10)']
+  origem origem_dado [not null, default: 'extraido']
+  criado_em datahora [not null]
+
+  Note: 'Uma nota/cupom. Um churrasco pode ter varias. A imagem da nota NAO e armazenada (secao 20.3).'
+}
+
+Table item_compra {
+  id uuid [pk]
+  compra_id uuid [not null]
+  descricao texto [not null]
+  valor_total decimal [not null, note: 'sempre >= 0 (7.10.3)']
+  categoria_rateio categoria_rateio [not null, default: 'geral']
+  confirmado booleano [not null, default: false, note: 'item nao confirmado nao entra no rateio (regra 11.11)']
+  origem origem_dado [not null, default: 'extraido']
+  ordem inteiro [not null]
+
+  Note: 'Linha da nota fiscal, apos revisao do usuario.'
+}
+
+Table atribuicao {
+  id uuid [pk]
+  item_compra_id uuid [not null]
+  participante_id uuid [not null]
+
+  // unique(item_compra_id, participante_id)
+  Note: 'Associativa: quem consumiu o que. Ausencia de linhas para um item significa "divide conforme a categoria de rateio" (regra 11.5), nao "ninguem consumiu".'
+}
+
+Table registro_pos_evento {
+  id uuid [pk]
+  churrasco_id uuid [not null, unique, note: 'no maximo um registro por churrasco (7.10.6)']
+  texto_livre texto [not null]
+  ajustes_json texto [note: 'JSON com ajustes percentuais por categoria; nulo quando o modelo estava indisponivel']
+  criado_em datahora [not null]
+
+  Note: 'Registro do que sobrou/faltou. ajustes_json e desnormalizado de proposito (trade-off na secao 7.8).'
+}
+
+enum status_churrasco {
+  planejando
+  comprando
+  fechando_conta
+  concluido
+}
+
+enum categoria_lista {
+  carne
+  acompanhamento
+  bebida_alcoolica
+  bebida_nao_alcoolica
+  carvao_e_utensilios
+  outro
+}
+
+enum categoria_rateio {
+  geral
+  bebida_alcoolica
+  bebida_nao_alcoolica
+  apenas_carne
+}
+
+enum unidade_medida {
+  kg
+  g
+  unidade
+  litro
+  ml
+  pacote
+}
+
+enum origem_dado {
+  calculado
+  extraido
+  manual
+}
+
+// Relacionamentos (cardinalidade conforme o diagrama da secao 7.1)
+Ref: churrasco.id < participante.churrasco_id
+Ref: churrasco.id < item_lista.churrasco_id
+Ref: churrasco.id < compra.churrasco_id
+Ref: churrasco.id - registro_pos_evento.churrasco_id
+Ref: compra.id < item_compra.compra_id
+Ref: item_compra.id < atribuicao.item_compra_id
+Ref: participante.id < atribuicao.participante_id

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="category_sides">
+
+  <path d="M262 150 C262 92 306 56 364 56 C364 114 320 150 262 150 Z" fill="#5FA83E"></path>
+  <path d="M96 308 C96 214 168 152 256 152 C344 152 416 214 416 308 A40 40 0 0 1 376 348 H136 A40 40 0 0 1 96 308 Z" fill="#E8A33D"></path>
+  <path d="M158 308 C158 250 202 212 256 212 C310 212 354 250 354 308 Z" fill="#FDF8F2"></path>
+  <path d="M262 150 C286 118 320 100 356 96 C330 128 300 146 262 150 Z" fill="#5FA83E"></path>
+
+</g>
+</svg>

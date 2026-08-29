@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="ember_particle_1">
+
+  <g transform="translate(256,256) rotate(0)">
+    <path d="M0 -150 C75 -30 75 72 0 150 C-75 72 -75 -30 0 -150 Z" fill="#FF6B35"></path>
+    <path d="M0 -150 C33 -66 33 -18 0 18 C-33 -18 -33 -66 0 -150 Z" fill="#F2B134"></path>
+  </g>
+
+</g>
+</svg>

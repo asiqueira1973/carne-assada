@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="empty_grill">
+
+  <g id="legs">
+    <rect x="-9" y="0" width="18" height="100" rx="9" fill="#2B2118" stroke="#E8A33D" stroke-width="5" transform="translate(198,348) rotate(30)"></rect>
+    <rect x="-9" y="0" width="18" height="100" rx="9" fill="#2B2118" stroke="#E8A33D" stroke-width="5" transform="translate(314,348) rotate(-30)"></rect>
+  </g>
+  <g id="bowl">
+    <path d="M144 262 H368 A112 112 0 0 1 144 262 Z" fill="#2B2118" stroke="#E8A33D" stroke-width="5"></path>
+  </g>
+  <g id="coals">
+    <path d="M178 290 C178 258 208 244 256 244 C304 244 334 258 334 290 Z" fill="#FF6B35"></path>
+    <circle cx="220" cy="270" r="13" fill="#F2B134"></circle>
+    <circle cx="292" cy="274" r="11" fill="#F2B134"></circle>
+    
+  </g>
+  <g id="grate">
+    <rect x="136" y="240" width="240" height="16" rx="8" fill="#E8A33D"></rect>
+  </g>
+  <g id="skewers">
+    <rect x="-74" y="-5" width="148" height="10" rx="5" fill="#2B2118" stroke="#E8A33D" stroke-width="4" transform="translate(206,230) rotate(-6)"></rect>
+    <rect x="-64" y="-5" width="128" height="10" rx="5" fill="#2B2118" stroke="#E8A33D" stroke-width="4" transform="translate(306,222) rotate(5)"></rect>
+  </g>
+  <g id="flames">
+    <path d="M 256 242 C 226 210.72 231.4 179.44 256 150 C 280.6 179.44 286 210.72 256 242 Z" fill="#FF6B35"></path>
+    <path d="M 256 242 C 241 225 243.7 208 256 192 C 268.3 208 271 225 256 242 Z" fill="#F2B134"></path>
+    <path d="M 206 242 C 185 222.28 188.78 202.56 206 184 C 223.22 202.56 227 222.28 206 242 Z" fill="#FF6B35"></path>
+    <path d="M 306 242 C 285 220.92 288.78 199.84 306 180 C 323.22 199.84 327 220.92 306 242 Z" fill="#F2B134"></path>
+  </g>
+<g id="smoke"><path d="M352 210 C382 196 376 168 352 158 C332 150 328 128 346 116" fill="none" stroke="#E8A33D" stroke-width="13" stroke-linecap="round"></path></g>
+</g>
+</svg>

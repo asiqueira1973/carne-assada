@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="meat_board">
+
+  <g id="board">
+    <rect x="58" y="106" width="396" height="300" rx="46" fill="#E8A33D" transform="rotate(-3 256 256)"></rect>
+    <rect x="76" y="124" width="360" height="264" rx="34" fill="#F2B134" transform="rotate(-3 256 256)"></rect>
+  </g>
+  <g id="picanha">
+    <g transform="translate(178,192) rotate(-7)">
+      <rect x="-84" y="-46" width="168" height="92" rx="40" fill="#C1443A"></rect>
+      <path d="M-84 -6 A40 40 0 0 1 -44 -46 H44 A40 40 0 0 1 84 -6 A56 56 0 0 0 28 -30 H-28 A56 56 0 0 0 -84 -6 Z" fill="#FDF8F2"></path>
+    </g>
+  </g>
+  <g id="sausage-coils">
+    <circle cx="356" cy="176" r="48" fill="#FF6B35"></circle>
+    <circle cx="356" cy="176" r="20" fill="#F2B134"></circle>
+    <circle cx="352" cy="296" r="38" fill="#FF6B35"></circle>
+    <circle cx="352" cy="296" r="16" fill="#F2B134"></circle>
+  </g>
+  <g id="drumstick">
+    <g transform="translate(152,312) rotate(26)">
+      <rect x="-42" y="-40" width="84" height="80" rx="38" fill="#E8A33D" stroke="#2B2118" stroke-width="4"></rect>
+      <rect x="-10" y="24" width="20" height="44" rx="10" fill="#FDF8F2" stroke="#2B2118" stroke-width="4"></rect>
+      <circle cx="-15" cy="68" r="15" fill="#FDF8F2" stroke="#2B2118" stroke-width="4"></circle>
+      <circle cx="15" cy="68" r="15" fill="#FDF8F2" stroke="#2B2118" stroke-width="4"></circle>
+    </g>
+  </g>
+  <g id="pepper-rings">
+    <circle cx="250" cy="318" r="27" fill="#5FA83E"></circle>
+    <circle cx="250" cy="318" r="13" fill="#F2B134"></circle>
+    <circle cx="292" cy="352" r="22" fill="#5FA83E"></circle>
+    <circle cx="292" cy="352" r="10" fill="#F2B134"></circle>
+  </g>
+  <g id="salt-pile">
+    <path d="M232 232 C232 208 254 192 280 192 C306 192 328 208 328 232 Z" fill="#FDF8F2" stroke="#E8A33D" stroke-width="4"></path>
+    <circle cx="248" cy="180" r="6" fill="#FDF8F2" stroke="#E8A33D" stroke-width="3"></circle>
+    <circle cx="300" cy="172" r="5" fill="#FDF8F2" stroke="#E8A33D" stroke-width="3"></circle>
+  </g>
+
+</g>
+</svg>

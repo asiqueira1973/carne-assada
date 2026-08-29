@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="category_meat">
+
+  <rect x="74" y="176" width="364" height="176" rx="84" fill="#C1443A"></rect>
+  <path d="M74 264 A88 88 0 0 1 162 176 H350 A88 88 0 0 1 438 264 V244 A64 64 0 0 0 374 176 H138 A64 64 0 0 0 74 244 Z" fill="#FDF8F2"></path>
+  <rect x="120" y="176" width="272" height="46" rx="23" fill="#FDF8F2"></rect>
+
+</g>
+</svg>

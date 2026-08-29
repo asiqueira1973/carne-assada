@@ -1,0 +1,10 @@
+# Projeto Xcode é gerado pelo XcodeGen a partir de project.yml
+CarneAssada.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+build/
+.DS_Store
+
+# Bundle de handoff do Claude Design (400 KB de HTML de protótipo)
+handoff-claude-design/

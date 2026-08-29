@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+<g id="empty_plate">
+
+  <g id="plate">
+    <circle cx="228" cy="278" r="152" fill="#FDF8F2" stroke="#E8A33D" stroke-width="7"></circle>
+    <circle cx="228" cy="278" r="114" fill="#FDF8F2" stroke="#E8A33D" stroke-width="4"></circle>
+  </g>
+  <g id="skewer">
+    <g transform="translate(228,278) rotate(-22)">
+      <rect x="-126" y="-8" width="252" height="16" rx="8" fill="#2B2118"></rect>
+      <path d="M126 -8 L166 0 L126 8 Z" fill="#2B2118"></path>
+      <rect x="-166" y="-19" width="46" height="38" rx="16" fill="#2B2118"></rect>
+    </g>
+  </g>
+  <g id="leftovers">
+    <circle cx="186" cy="334" r="24" fill="#5FA83E"></circle>
+    <circle cx="186" cy="334" r="12" fill="#FDF8F2"></circle>
+    <circle cx="256" cy="352" r="9" fill="#E8A33D"></circle>
+    <circle cx="288" cy="326" r="7" fill="#E8A33D"></circle>
+    <circle cx="228" cy="368" r="6" fill="#C1443A"></circle>
+  </g>
+  <g id="napkin">
+    <path d="M382 214 L474 240 L442 402 L350 376 Z" fill="#FF6B35"></path>
+    <path d="M382 214 L474 240 L436 290 L350 264 Z" fill="#C1443A"></path>
+  </g>
+
+</g>
+</svg>
