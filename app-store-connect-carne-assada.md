@@ -237,15 +237,17 @@ alexandre@dablab.com.br
 | **Availability** | All Countries or Regions |
 | **Family Sharing** | Desligado |
 
-**Display Name (pt-BR):**
+**Display Name (pt-BR):** — máx. 30 caracteres
 ```
 Dividir a conta
 ```
 
-**Description (pt-BR):**
+**Description (pt-BR):** — **máx. 30 caracteres**, não é campo de texto de venda
 ```
-Libera a divisão da conta: leia a nota do mercado por foto, lance itens, marque quem consumiu o quê e mande o valor de cada um pro grupo. Pagamento único, sem assinatura — e tudo que vier nas próximas versões já está incluído.
+Leia a nota e divida a conta
 ```
+
+> ⚠️ Os dois campos de localização do IAP são curtíssimos: **30 caracteres cada**. A intuição manda escrever um texto de venda aqui, mas o texto de venda é a descrição do **app** — a do IAP é um rótulo. Cabe uma frase e olhe lá.
 
 **Review Screenshot:** obrigatória. Use a captura da tela de paywall (`prints para a appstore/6.5/09-paywall.png`).
 
@@ -397,6 +399,8 @@ Descrição: 3051/4000 caracteres [OK]
 Keywords: 98/100 bytes [OK]
 Notas da versão (What's New): 276/4000 caracteres [OK]
 Notas de revisão (App Review): 2768/4000 caracteres [OK]
+Nome de exibição do IAP: 15/30 caracteres [OK]
+Descrição do IAP: 28/30 caracteres [OK]
 ```
 
 Medido, não estimado.
