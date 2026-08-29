@@ -9,6 +9,7 @@ import SwiftData
 struct ModoMercadoView: View {
 
     @Bindable var evento: churrasco
+    let irParaConta: () -> Void
 
     @Environment(\.modelContext) private var contexto
     @Environment(\.accessibilityReduceMotion) private var reduzirMovimento
@@ -66,38 +67,75 @@ struct ModoMercadoView: View {
         VStack(spacing: 0) {
             cabecalhoDeProgresso
 
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    ForEach(ListaService.porCategoria(itens), id: \.0) { categoria, doGrupo in
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack(spacing: 10) {
-                                Image(categoria.icone)
-                                    .resizable().scaledToFit()
-                                    .frame(width: Metrica.iconeCategoria,
-                                           height: Metrica.iconeCategoria)
-                                    .accessibilityHidden(true)
-                                Text(categoria.rotulo)
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(categoria.cor)
-                            }
-                            .padding(.horizontal, 4)
-
-                            VStack(spacing: 0) {
-                                ForEach(doGrupo) { item in
-                                    LinhaDeMercado(item: item) { marcar(item) }
-                                    if item.id != doGrupo.last?.id {
-                                        Divider().padding(.leading, 52)
+            // `List` com `.insetGrouped`: dá o card arredondado por categoria com divisores
+            // entre as linhas — a densidade alta que o momento 2 da seção 2 pede — e, de
+            // quebra, é o que faz o swipe para remover funcionar (ver 24.14.6).
+            List {
+                ForEach(ListaService.porCategoria(itens), id: \.0) { categoria, doGrupo in
+                    Section {
+                        ForEach(doGrupo) { item in
+                            LinhaDeMercado(item: item) { marcar(item) }
+                                .listRowInsets(.init(top: 0, leading: 16,
+                                                     bottom: 0, trailing: 16))
+                                .listRowBackground(Paleta.fundoCartao)
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) { tirarDaLista(item) } label: {
+                                        Label("Tirar da lista", systemImage: "trash")
                                     }
                                 }
-                            }
-                            .cartao()
                         }
+                    } header: {
+                        HStack(spacing: 10) {
+                            Image(categoria.icone)
+                                .resizable().scaledToFit()
+                                .frame(width: Metrica.iconeCategoria,
+                                       height: Metrica.iconeCategoria)
+                                .accessibilityHidden(true)
+                            Text(categoria.rotulo)
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(categoria.cor)
+                        }
+                        .textCase(nil)
+                        .padding(.bottom, 2)
                     }
                 }
-                .padding(.horizontal, Metrica.margemLateral)
-                .padding(.vertical, 10)
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .safeAreaInset(edge: .bottom) { botaoDeSaida }
+        }
+    }
+
+    /// Saída do modo mercado, **sempre disponível** — nunca depende de ter marcado tudo.
+    ///
+    /// Marcar todos os itens é o caso feliz, não um pedágio: no meio da compra alguém liga
+    /// dizendo que já tem carvão em casa, e o organizador precisa poder seguir para a conta
+    /// com item por marcar. Quem quiser limpar a lista de verdade remove o item por swipe.
+    private var botaoDeSaida: some View {
+        VStack(spacing: 6) {
+            Button(action: irParaConta) {
+                Text(tudoComprado ? "Tudo no carrinho, ir pra conta" : "Terminei as compras")
+            }
+            .buttonStyle(BotaoPrincipal())
+
+            if !tudoComprado && !itens.isEmpty {
+                Text("Faltou marcar \(itens.count - comprados). Tudo bem — dá pra voltar depois.")
+                    .estiloLegenda()
             }
         }
+        .padding(.horizontal, Metrica.margemLateral)
+        .padding(.top, 6)
+        .padding(.bottom, 4)
+        .background(.bar)
+    }
+
+    /// Remove um item da lista de compras (regra 11.12: reversível por re-adição na aba
+    /// Lista, então não pede confirmação). É a saída para "não precisa comprar carvão".
+    private func tirarDaLista(_ item: item_lista) {
+        withAnimation(Movimento.curva(reduzir: reduzirMovimento)) {
+            contexto.delete(item)
+        }
+        try? contexto.save()
     }
 
     /// Progresso "12 de 27" — copy 15.18. Atualiza na hora e é lido pelo VoiceOver (8.4).
@@ -180,6 +218,7 @@ private struct LinhaDeMercado: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(item.nome), \(Formatacao.quantidade(item.quantidade, item.unidade))")
         .accessibilityValue(item.comprado ? "no carrinho" : "falta pegar")
+        .accessibilityHint("Toque para marcar. Arraste pro lado para tirar da lista")
         .accessibilityAddTraits(.isButton)
     }
 }

@@ -84,6 +84,11 @@ struct PaywallView: View {
             .padding(.bottom, 20)
         }
         .background(Paleta.fundoTela)
+        .task {
+            // Se o produto falhou na abertura do app, esta é a hora natural de tentar
+            // de novo — o usuário acabou de demonstrar interesse em comprar.
+            if entitlement.produto == nil { await entitlement.carregarProduto() }
+        }
         .navigationTitle("Dividir a conta")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -93,23 +98,45 @@ struct PaywallView: View {
         }
     }
 
+    /// Botão de compra, em três situações bem diferentes.
+    ///
+    /// A terceira — **o produto não carregou** — é a que importa aqui: acontece com o
+    /// aparelho offline, com o produto ainda não aprovado na loja ou num build sem
+    /// configuração de StoreKit. Antes ela virava um botão cinza sem explicação nenhuma,
+    /// e o usuário ficava preso no paywall sem saber por quê. Agora ela se explica e
+    /// oferece uma segunda tentativa.
+    @ViewBuilder
     private var botaoDeCompra: some View {
-        Button {
-            comprar()
-        } label: {
-            if entitlement.comprando {
-                ProgressView().tint(.white)
-            } else if let produto = entitlement.produto {
-                // Preço direto do StoreKit — nunca escrito no código (regra 11.16.6).
-                Text("Liberar por \(produto.displayPrice)")
-            } else {
-                // Produto ainda não carregou: mostra o rótulo sem preço em vez de
-                // inventar um. Um preço errado no botão é pior que nenhum preço.
-                Text("Liberar")
+        if entitlement.produto == nil && !entitlement.carregandoProduto {
+            VStack(spacing: 10) {
+                Text("Não consegui falar com a App Store agora. Confere a conexão e tenta de novo.")
+                    .font(.footnote)
+                    .foregroundStyle(Paleta.atencao)
+                    .multilineTextAlignment(.center)
+
+                Button("Tentar de novo") {
+                    Task { await entitlement.carregarProduto() }
+                }
+                .buttonStyle(BotaoPrincipal())
             }
+        } else {
+            Button {
+                comprar()
+            } label: {
+                if entitlement.comprando || entitlement.carregandoProduto {
+                    ProgressView().tint(.white)
+                } else if let produto = entitlement.produto {
+                    // Preço direto do StoreKit — nunca escrito no código (regra 11.16.6).
+                    Text("Liberar por \(produto.displayPrice)")
+                } else {
+                    // Enquanto carrega, o rótulo vai sem preço em vez de inventar um:
+                    // preço errado no botão é pior que nenhum preço.
+                    Text("Liberar")
+                }
+            }
+            .buttonStyle(BotaoPrincipal())
+            .disabled(entitlement.comprando || entitlement.produto == nil)
         }
-        .buttonStyle(BotaoPrincipal())
-        .disabled(entitlement.comprando || entitlement.produto == nil)
     }
 
     // MARK: - Ações

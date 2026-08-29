@@ -30,6 +30,10 @@ final class EntitlementService {
     private(set) var estado: EstadoDoEntitlement = .desconhecido
     private(set) var produto: Product?
     private(set) var comprando = false
+    /// `true` enquanto a consulta do produto à App Store está em andamento.
+    /// Serve para o paywall distinguir "ainda carregando" de "não deu para carregar" —
+    /// sem isso os dois estados são um botão morto, que não explica nada a ninguém.
+    private(set) var carregandoProduto = false
 
     private var observador: Task<Void, Never>?
 
@@ -62,6 +66,15 @@ final class EntitlementService {
     /// nenhuma tela** — o entitlement é lido aqui e observado por `Transaction.updates`.
     func carregar() async {
         await atualizarEntitlement()
+        await carregarProduto()
+    }
+
+    /// Consulta o produto na App Store. Falha aqui não é erro do usuário: acontece com o
+    /// aparelho offline, com o produto ainda não aprovado na loja, ou num build de
+    /// desenvolvimento sem configuração de StoreKit. O paywall precisa saber diferenciar.
+    func carregarProduto() async {
+        carregandoProduto = true
+        defer { carregandoProduto = false }
         produto = try? await Product.products(for: [Self.idDoProduto]).first
     }
 

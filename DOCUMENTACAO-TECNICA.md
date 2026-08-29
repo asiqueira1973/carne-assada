@@ -6,7 +6,7 @@ Regra de manutenção: qualquer mudança em modelo, serviço ou lógica de tela 
 
 | | |
 |---|---|
-| Versão do spec implementada | 1.5 |
+| Versão do spec implementada | 1.6 |
 | Plataforma | iOS 26.0+, iPhone, retrato |
 | Stack | Swift 6 (concorrência estrita), SwiftUI, SwiftData, Foundation Models, Vision, StoreKit 2 |
 | Dependências externas | nenhuma |
@@ -316,17 +316,23 @@ O toggle de carne suína é escolha do usuário, não do modelo: é preservado a
 
 Agrupada por categoria, com o ícone SVG a 28 pt e o título na cor da categoria. Toque edita, swipe remove (sem confirmação — é reversível por re-adição).
 
+Uma dica de uso (copy 15.37) explica os dois gestos, porque num **card** eles não são óbvios: o usuário reconhece "toque para editar, arraste para excluir" numa linha de tabela, não num card solto. Ela some para sempre no primeiro "Entendi", guardado em `AppStorage` — dica permanente vira ruído em quem já aprendeu.
+
 O aviso de recálculo (15.9) só aparece quando **já havia** lista antes: na primeira geração não há nada sendo recalculado.
 
 Quando há ajuste histórico ativo, mostra a copy 15.14 com um botão que o desliga e regera a lista base.
 
 ### Modo mercado (10.6)
 
-Única tela com densidade alta: linhas dentro de um card por categoria, com divisores. Marcar **não recolhe nem reordena** — lista que se reorganiza embaixo do polegar faz perder o lugar.
+Única tela com densidade alta. Usa `List` com `.listStyle(.insetGrouped)`: o card arredondado por categoria com divisores entre linhas sai de graça do estilo, e é ele que habilita o swipe.
+
+Marcar **não recolhe nem reordena** — lista que se reorganiza embaixo do polegar faz perder o lugar.
 
 Impede o bloqueio automático da tela enquanto aberta e restaura ao sair.
 
-Marcar o último item dispara as brasas (16.5.4) e o háptico de sucesso, **uma vez por churrasco por sessão**.
+**Sair nunca depende de marcar tudo** (regra 11.17). O botão de saída está sempre disponível e leva à aba Conta; quando falta item, ele diz quantos, sem bloquear e sem pedir confirmação. Para o caso "não precisa comprar carvão, eu tenho em casa", o item sai por swipe ali mesmo — hard delete, reversível por re-adição na aba Lista.
+
+Marcar o último item dispara as brasas (16.5.4) e o háptico de sucesso, **uma vez por churrasco por sessão**. A comemoração continua valendo só para carrinho de fato completo.
 
 ### Conta (10.7)
 
@@ -380,7 +386,9 @@ Estado da compra, restaurar (obrigatório, regra 11.16.5), o aviso de backup da 
 
 ### Paywall (10.16)
 
-Copies 15.28 a 15.31 e 15.36. O botão exibe `Product.displayPrice`; enquanto o produto não carrega, mostra "Liberar" **sem preço** — preço errado no botão é pior que nenhum preço.
+Copies 15.28 a 15.31 e 15.36. O botão exibe `Product.displayPrice`; enquanto o produto carrega, mostra "Liberar" **sem preço** — preço errado no botão é pior que nenhum preço.
+
+`EntitlementService` expõe `carregandoProduto` justamente para o paywall separar dois estados que pareciam um só: **carregando** mostra progresso; **não carregou** mostra a copy 15.38 e um botão de nova tentativa (regra 11.16.9). Antes os dois viravam o mesmo botão cinza, sem explicação — e o usuário ficava preso no paywall sem saber por quê. O paywall também reconsulta o produto ao abrir.
 
 Cancelamento volta ao paywall **sem mensagem**. Restauração sem compra não é erro: sai em cor de atenção com a copy 15.33.
 
@@ -429,6 +437,7 @@ Sem esta seção o documento envelhece mentindo. Todas estão também na seção
 | 6 | Telas de lista usam `List`, não `ScrollView` + `LazyVStack` | `swipeActions` **só funciona dentro de uma `List`**; fora dela é ignorado em silêncio. O visual de card é preservado escondendo fundo e separador |
 | 7 | O título grande da barra de navegação trunca em AX5 | Comportamento do próprio iOS, igual ao dos apps da Apple. Todo o **conteúdo** das telas respeita o critério 8.11 |
 | 8 | O rateio não é gravado; é recalculado a cada leitura | Garante que a exceção 9.2.7 nunca deixe valor velho em tela |
+| 10 | A dica de uso 15.37 aparece uma vez e some com "Entendi" | Os gestos padrão do iOS não se anunciam num card. Feedback do primeiro teste em aparelho |
 | 9 | 17 SVG, não 15 | 8 ilustrações de tela + 6 ícones de categoria + 3 partículas de brasa. O spec contava só as ilustrações |
 
 ---

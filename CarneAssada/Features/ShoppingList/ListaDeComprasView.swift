@@ -18,6 +18,10 @@ struct ListaDeComprasView: View {
     @State private var mostrarAvisoDeRecalculo = false
     /// Guardado antes de abrir a tela da turma, para distinguir "gerou" de "regerou".
     @State private var tinhaListaAntes = false
+    /// A dica de uso da lista some para sempre depois do primeiro "Entendi".
+    @AppStorage("dica_lista_vista") private var dicaJaVista = false
+
+    private var mostrarDica: Bool { !dicaJaVista && !evento.itens_lista.isEmpty }
 
     /// Ajuste histórico em vigor (regra 11.14). Quando existe, a lista mostra a copy 15.14
     /// e o usuário pode desligar com um toque.
@@ -95,6 +99,9 @@ struct ListaDeComprasView: View {
     private var conteudo: some View {
         VStack(spacing: 0) {
             List {
+                if mostrarDica {
+                    dicaDeUso
+                }
                 if mostrarAvisoDeRecalculo {
                     Aviso(texto: Copy.avisoDeRecalculo, cor: Paleta.brasaLaranja)
                         .modifier(LinhaSemFundo())
@@ -130,6 +137,34 @@ struct ListaDeComprasView: View {
     private func abrirTurma() {
         tinhaListaAntes = !evento.itens_lista.isEmpty
         editandoTurma = true
+    }
+
+    /// Dica de uso da lista.
+    ///
+    /// Toque para editar e arrastar para excluir são gestos padrão do iOS, mas **não são
+    /// óbvios num card** — o usuário reconhece o padrão numa linha de tabela, não aqui.
+    /// Aparece uma vez e some para sempre com um toque em "Entendi": dica que fica para
+    /// sempre vira ruído em quem já aprendeu.
+    private var dicaDeUso: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "hand.tap")
+                .foregroundStyle(Paleta.brasaLaranja)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Toque num item pra mudar a quantidade. Arraste pro lado pra tirar da lista.")
+                    .font(.footnote)
+                    .foregroundStyle(Paleta.carvaoEscuro)
+                Button("Entendi") {
+                    withAnimation { dicaJaVista = true }
+                }
+                .font(.footnote.weight(.semibold))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Paleta.brasaLaranja.opacity(0.12), in: .rect(cornerRadius: 12))
+        .modifier(LinhaSemFundo())
+        .accessibilityElement(children: .combine)
     }
 
     /// Copy 15.14 mais o desligamento do ajuste com um toque (épico 8.9).

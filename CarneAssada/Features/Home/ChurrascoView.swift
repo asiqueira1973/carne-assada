@@ -28,7 +28,7 @@ struct ChurrascoView: View {
             }
 
             Tab("Mercado", systemImage: "cart.fill", value: Aba.mercado) {
-                ModoMercadoView(evento: evento)
+                ModoMercadoView(evento: evento, irParaConta: { aba = .conta })
             }
 
             Tab("Conta", systemImage: iconeDaConta, value: Aba.conta) {

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Produto** | Carne Assada — planejador e divisor de conta de churrasco |
-| **Versão do documento** | 1.5 |
+| **Versão do documento** | 1.6 |
 | **Autor / responsável de produto** | Alexandre Siqueira (Dab Lab) |
 | **Status** | implementado — MVP construído; pendências de validação em aparelho listadas na seção 26 |
 | **Data** | 29 de agosto de 2026 |
@@ -11,6 +11,7 @@
 | **Mudanças da v1.2** | Compra única cobre todas as releases futuras (regra 11.16.8); copy 15.36; pergunta 25.6 resolvida; seções 24 e 28.0 propagadas |
 | **Mudanças da v1.3** | Ilustrações e ícone do app passam a ser assets fornecidos, não desenhados em código (nova seção 16.7); seções 16.3, 16.6, 17.7, 18.3, 26 e 27 propagadas |
 | **Mudanças da v1.4** | Ilustrações passam de PNG para SVG (16.7, nova regra 16.7.1.1); alvo de binário volta a 30 MB (17.7) |
+| **Mudanças da v1.6** | Feedback do primeiro teste em aparelho. Sair do modo mercado **nunca** depende de ter marcado tudo, e o item vira removível ali mesmo (8.4, nova regra 11.17). Dica de uso na lista de compras (nova copy 15.37). Paywall deixa de virar beco sem saída quando o produto não carrega da App Store (8.10, nova regra 11.16.9, nova copy 15.38) |
 | **Mudanças da v1.5** | **Paleta de fundo corrigida** (16.1): `fundoCreme`/`cartaoBranco` viram `fundoTela`/`fundoCartao`, com fundo chapado — a regra 16.5.8 (gradiente na Home) foi **revogada**. **Mínimo cai para iOS 26** e o épico 8.5 vai para Vision + texto: a premissa 4.3.1 falhou na validação (4.3, 4.1, 4.2, 23.6, 17.10). Perguntas 25.2, 25.3 e 25.5 resolvidas, com carne suína opcional entrando na tabela 11.1.1. Navegação do churrasco passa a ter 4 abas (seção 10). Seções 8.5, 16.7 e 26 propagadas |
 | **Plataforma** | iOS nativo (SwiftUI), iOS 26+ |
 
@@ -397,6 +398,8 @@ Ordem de implementação obrigatória.
 - [ ] Funciona integralmente em modo avião.
 - [ ] Marcar o último item dispara a animação de conclusão uma única vez por churrasco por sessão.
 - [ ] A tela impede o bloqueio automático da tela enquanto está aberta (`isIdleTimerDisabled = true`) e restaura ao sair.
+- [ ] **Sair do modo mercado não depende de marcar tudo** (regra 11.17): a ação de saída está sempre disponível, e diz quantos itens ficaram por marcar sem impedir nada.
+- [ ] **Item é removível por swipe dentro do modo mercado**, sem precisar voltar à lista.
 
 ### 8.5 Leitura da nota fiscal por foto
 
@@ -486,6 +489,7 @@ Ordem de implementação obrigatória.
 - [ ] Enquanto o entitlement é desconhecido, a aba Conta mostra carregamento e **não** mostra paywall nem libera a feature (regra 11.16.4).
 - [ ] Exatamente as funcionalidades marcadas como pagas na tabela 11.16 ficam bloqueadas; todas as marcadas como grátis permanecem acessíveis, sem limite de quantidade e sem cronômetro.
 - [ ] O paywall lista o que a compra libera com a copy 15.28 a 15.31 e deixa explícito que é pagamento único, não assinatura.
+- [ ] Produto que não carrega da App Store mostra a copy 15.38 e um botão de nova tentativa, nunca um botão desabilitado sem explicação (regra 11.16.9).
 - [ ] Compra cancelada pelo usuário volta ao paywall sem mensagem de erro.
 - [ ] Falha de compra mostra a copy 15.32 e mantém o usuário no paywall.
 - [ ] "Restaurar compra" existe no paywall e em Ajustes; restauração sem compra encontrada mostra a copy 15.33 e não é tratada como erro.
@@ -703,6 +707,16 @@ Percentual por categoria, limitado a **−40% a +40%**. Aplicado após o cálcul
 - O app **não** muda o status do churrasco sozinho, exceto na transição descrita na seção 12.
 - O app **não** cobra por nada além do descrito em 11.16, e nunca cobra pelo que já foi liberado.
 
+### 11.17 Marcar tudo é o caso feliz, não um pedágio
+
+Sair do modo mercado **nunca** exige ter marcado todos os itens. No meio da compra alguém liga dizendo que já tem carvão em casa, o organizador desiste de um item, o mercado não tinha outro — e nada disso pode prender ninguém na tela.
+
+Duas saídas, e as duas existem:
+- **Seguir com item por marcar.** A ação de saída está sempre disponível e informa quantos faltaram, sem bloquear e sem pedir confirmação.
+- **Tirar o item da lista**, por swipe, ali mesmo no modo mercado. É hard delete, reversível por re-adição na tela 10.5, e por isso não pede confirmação (regra 11.12).
+
+A animação de conclusão (16.5.3 e 16.5.4) e a copy 15.19 continuam valendo **apenas** quando tudo foi marcado de verdade — comemorar carrinho incompleto é mentira, e mentira pequena estraga a confiança no resto do app.
+
 ### 11.16 Monetização — o que é grátis e o que é pago
 
 Modelo: **freemium por feature**, com **compra única não-consumível de R$ 19,90** (`carne_assada_pro`), vitalícia, sem assinatura.
@@ -735,6 +749,8 @@ Modelo: **freemium por feature**, com **compra única não-consumível de R$ 19,
 **11.16.6** — Preço e nome do produto vêm **sempre** do StoreKit, nunca escritos no código ou na copy. O "R$ 19,90" deste spec é a configuração no App Store Connect, não uma string do app — isso é o que faz o preço funcionar em promoção, em outra moeda e em mudança futura.
 
 **11.16.7** — Não há período de teste, desconto de lançamento nem preço promocional no MVP.
+
+**11.16.9 — Produto que não carrega não vira beco sem saída.** Se `Product.products(for:)` não devolver o produto — aparelho offline, produto ainda não aprovado na loja, build sem configuração de StoreKit — o paywall **não** exibe um botão desabilitado e mudo. Ele explica o que houve com a copy 15.38 e oferece uma segunda tentativa. O paywall também reconsulta o produto ao ser aberto: quem chegou até ali acabou de demonstrar interesse em comprar, e é o momento certo para tentar de novo. "Carregando" e "não deu para carregar" são estados distintos e a UI precisa distinguir os dois.
 
 **11.16.8 — Compra única e definitiva.** `carne_assada_pro` libera, além do escopo do MVP, **todas as funcionalidades pagas das releases futuras** (seção 28: PIX, exportação completa, iPad, widgets, App Intents). Não haverá segundo produto de compra, nem upgrade, nem "pro plus". Quem comprar hoje recebe tudo o que vier depois, sem pagar de novo.
 
@@ -870,6 +886,8 @@ Não há importação de arquivo no MVP.
 | 15.34 | Restauração com sucesso | Tudo certo, compra restaurada. |
 | 15.35 | Botão restaurar | Já comprei, restaurar |
 | 15.36 | Promessa de compra única (paywall e ficha da loja) | Pagamento único. Tudo que vier depois já está incluído. |
+| 15.37 | Dica de uso da lista de compras | Toque num item pra mudar a quantidade. Arraste pro lado pra tirar da lista. |
+| 15.38 | Produto não carregou da App Store | Não consegui falar com a App Store agora. Confere a conexão e tenta de novo. |
 
 **Regra de copy para o preço:** o valor exibido no paywall vem sempre do StoreKit (`Product.displayPrice`). Nenhuma copy deste documento contém preço, de propósito (regra 11.16.6).
 
@@ -1209,6 +1227,7 @@ O que ficou diferente do escrito, e por quê. Sem esta lista o documento envelhe
 | 24.14.5 | Dois campos novos em `churrasco`: `inclui_carne_suina` e `ajuste_historico_ligado` | Consequências diretas da decisão 25.3 e do critério "o usuário pode desligar o ajuste com um toque" do épico 8.9 |
 | 24.14.6 | Telas de lista usam `List` do SwiftUI, não `ScrollView` + `LazyVStack` | O swipe para excluir (10.1, 10.5) **só funciona dentro de uma `List`**; fora dela `swipeActions` é ignorado em silêncio. O visual de card da seção 16.3 é preservado escondendo fundo e separador de linha |
 | 24.14.7 | O título grande da barra de navegação ainda trunca em AX5 | Comportamento do próprio iOS para `.navigationTitle`, igual ao dos apps da Apple. **Todo o conteúdo** das telas respeita o critério 8.11 sem corte |
+| 24.14.9 | A dica 15.37 aparece uma vez e some para sempre com "Entendi" (`AppStorage`) | Toque para editar e arrastar para excluir são gestos padrão do iOS, mas **não são óbvios num card** — o usuário reconhece o padrão numa linha de tabela, não num card solto. Dica permanente viraria ruído em quem já aprendeu |
 | 24.14.8 | O rateio é recalculado a cada leitura, nunca gravado | Garante que a exceção 9.2.7 (participante excluído depois do fechamento) não deixe valor velho em tela |
 
 ---
