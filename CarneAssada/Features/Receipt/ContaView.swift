@@ -19,7 +19,6 @@ struct ContaView: View {
 
     @State private var capturandoNota = false
     @State private var lancandoManual = false
-    @State private var abrindoPaywall = false
 
     private var itensConfirmados: [item_compra] {
         evento.compras.flatMap(\.itens).filter(\.entra_no_rateio)
@@ -50,9 +49,6 @@ struct ContaView: View {
             .sheet(isPresented: $lancandoManual) {
                 LancamentoManualView(evento: evento)
             }
-            .sheet(isPresented: $abrindoPaywall) {
-                NavigationStack { PaywallView() }
-            }
         }
     }
 
@@ -68,34 +64,17 @@ struct ContaView: View {
 
     // MARK: - Bloqueada
 
-    /// O cadeado aparece **desde o início**, não só no momento do toque — mitigação do
-    /// risco 23.9 (ninguém pode descobrir o paywall com a nota amassada na mão).
+    /// A aba bloqueada **é** o paywall (tela 10.16), não uma antessala dele.
+    ///
+    /// Antes eram duas telas dizendo a mesma coisa: a aba mostrava título, subtítulo e
+    /// ilustração, e o botão abria uma folha com título, subtítulo e ilustração idênticos.
+    /// Tocar parecia não fazer nada. O bloqueio acontece na entrada desta tela (regra
+    /// 11.16.2), então é aqui que a compra tem de estar — a um toque, não a dois.
+    ///
+    /// O cadeado no ícone da aba continua aparecendo desde o início, que é a mitigação do
+    /// risco 23.9: ninguém pode descobrir o paywall com a nota amassada na mão.
     private var bloqueada: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            Ilustracao(asset: .notaEtelefone, altura: 190)
-
-            VStack(spacing: 8) {
-                Text(Copy.tituloDoPaywall)
-                    .font(.title2.bold())
-                    .foregroundStyle(Paleta.carvaoEscuro)
-                Text(Copy.subtituloDoPaywall)
-                    .font(.body)
-                    .foregroundStyle(Paleta.textoSecundario)
-            }
-            .multilineTextAlignment(.center)
-
-            Spacer()
-
-            // Regra 11.16.3: nada do que ele já cadastrou some por não ter comprado.
-            Text("Tudo que você já cadastrou continua aqui.")
-                .estiloLegenda()
-
-            Button("Ver o que a compra libera") { abrindoPaywall = true }
-                .buttonStyle(BotaoPrincipal())
-        }
-        .padding(.horizontal, Metrica.margemLateral)
-        .padding(.bottom, 14)
+        PaywallView()
     }
 
     // MARK: - Liberada

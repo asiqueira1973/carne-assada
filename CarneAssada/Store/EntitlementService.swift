@@ -146,6 +146,22 @@ final class EntitlementService {
         }
     }
 
+#if DEBUG
+    /// Libera ou tranca a conta **sem passar pelo StoreKit**, só para teste manual.
+    ///
+    /// Existe porque o produto `carne_assada_pro` ainda não está no App Store Connect: sem
+    /// isto não há como exercitar rateio, atribuição e compartilhamento num iPhone que não
+    /// esteja plugado no Xcode com a configuração de StoreKit.
+    ///
+    /// Está dentro de `#if DEBUG`: **não existe no binário de Release**, então não há
+    /// caminho para ela chegar à loja. Sai daqui assim que o produto existir de verdade.
+    func alternarLiberacaoDeTeste() {
+        let liberando = estado != .comprado
+        estado = liberando ? .comprado : .naoComprado
+        UserDefaults.standard.set(liberando, forKey: Self.chaveDeCache)
+    }
+#endif
+
     /// Resultado da restauração (regra 11.16.5).
     enum ResultadoDaRestauracao: Equatable {
         case restaurou

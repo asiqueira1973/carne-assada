@@ -6,7 +6,7 @@ Regra de manutenção: qualquer mudança em modelo, serviço ou lógica de tela 
 
 | | |
 |---|---|
-| Versão do spec implementada | 1.6 |
+| Versão do spec implementada | 1.7 |
 | Plataforma | iOS 26.0+, iPhone, retrato |
 | Stack | Swift 6 (concorrência estrita), SwiftUI, SwiftData, Foundation Models, Vision, StoreKit 2 |
 | Dependências externas | nenhuma |
@@ -339,7 +339,7 @@ Marcar o último item dispara as brasas (16.5.4) e o háptico de sucesso, **uma 
 Três estados, nesta ordem de verificação:
 
 1. `desconhecido` → carregamento. **Não** mostra paywall e **não** libera a feature.
-2. `naoComprado` → tela de bloqueio, com "Tudo que você já cadastrou continua aqui" (regra 11.16.3).
+2. `naoComprado` → **é o paywall** (10.16), renderizado inline com `PaywallView(dentroDaAba: true)`. Não existe tela intermediária: antes havia uma, e ela repetia título, subtítulo e ilustração do paywall que abria em seguida, então tocar parecia não fazer nada.
 3. `comprado` → compras, total e "Fechar a conta".
 
 O cadeado aparece no ícone da aba desde o início — não só ao tocar (mitigação do risco 23.9). No estado `desconhecido` o cadeado **não** aparece: o app não afirma que a feature está trancada antes de saber.
@@ -387,6 +387,8 @@ Estado da compra, restaurar (obrigatório, regra 11.16.5), o aviso de backup da 
 ### Paywall (10.16)
 
 Copies 15.28 a 15.31 e 15.36. O botão exibe `Product.displayPrice`; enquanto o produto carrega, mostra "Liberar" **sem preço** — preço errado no botão é pior que nenhum preço.
+
+`PaywallView` tem o parâmetro `dentroDaAba` (padrão `true`): dentro da aba não há botão "Fechar" (a tab bar já é a saída) nem `dismiss` após comprar (o estado do entitlement muda e a `ContaView` troca o conteúdo sozinha), e o conteúdo ganha folga extra no rodapé para não ficar sob a tab bar flutuante.
 
 `EntitlementService` expõe `carregandoProduto` justamente para o paywall separar dois estados que pareciam um só: **carregando** mostra progresso; **não carregou** mostra a copy 15.38 e um botão de nova tentativa (regra 11.16.9). Antes os dois viravam o mesmo botão cinza, sem explicação — e o usuário ficava preso no paywall sem saber por quê. O paywall também reconsulta o produto ao abrir.
 
@@ -437,6 +439,7 @@ Sem esta seção o documento envelhece mentindo. Todas estão também na seção
 | 6 | Telas de lista usam `List`, não `ScrollView` + `LazyVStack` | `swipeActions` **só funciona dentro de uma `List`**; fora dela é ignorado em silêncio. O visual de card é preservado escondendo fundo e separador |
 | 7 | O título grande da barra de navegação trunca em AX5 | Comportamento do próprio iOS, igual ao dos apps da Apple. Todo o **conteúdo** das telas respeita o critério 8.11 |
 | 8 | O rateio não é gravado; é recalculado a cada leitura | Garante que a exceção 9.2.7 nunca deixe valor velho em tela |
+| 11 | Atalho de liberação da conta em `#if DEBUG`, na tela de Ajustes | Permite exercitar o rateio em aparelho enquanto `carne_assada_pro` não existe no App Store Connect. Verificado por `strings` que não aparece no binário de Release. Remover quando o produto existir |
 | 10 | A dica de uso 15.37 aparece uma vez e some com "Entendi" | Os gestos padrão do iOS não se anunciam num card. Feedback do primeiro teste em aparelho |
 | 9 | 17 SVG, não 15 | 8 ilustrações de tela + 6 ícones de categoria + 3 partículas de brasa. O spec contava só as ilustrações |
 

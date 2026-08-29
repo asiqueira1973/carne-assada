@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Produto** | Carne Assada — planejador e divisor de conta de churrasco |
-| **Versão do documento** | 1.6 |
+| **Versão do documento** | 1.7 |
 | **Autor / responsável de produto** | Alexandre Siqueira (Dab Lab) |
 | **Status** | implementado — MVP construído; pendências de validação em aparelho listadas na seção 26 |
 | **Data** | 29 de agosto de 2026 |
@@ -11,6 +11,7 @@
 | **Mudanças da v1.2** | Compra única cobre todas as releases futuras (regra 11.16.8); copy 15.36; pergunta 25.6 resolvida; seções 24 e 28.0 propagadas |
 | **Mudanças da v1.3** | Ilustrações e ícone do app passam a ser assets fornecidos, não desenhados em código (nova seção 16.7); seções 16.3, 16.6, 17.7, 18.3, 26 e 27 propagadas |
 | **Mudanças da v1.4** | Ilustrações passam de PNG para SVG (16.7, nova regra 16.7.1.1); alvo de binário volta a 30 MB (17.7) |
+| **Mudanças da v1.7** | A aba Conta bloqueada **é** o paywall, não uma antessala dele (regra 11.16.2 reescrita, seção 10 propagada): as duas telas diziam a mesma coisa e tocar parecia não fazer nada |
 | **Mudanças da v1.6** | Feedback do primeiro teste em aparelho. Sair do modo mercado **nunca** depende de ter marcado tudo, e o item vira removível ali mesmo (8.4, nova regra 11.17). Dica de uso na lista de compras (nova copy 15.37). Paywall deixa de virar beco sem saída quando o produto não carrega da App Store (8.10, nova regra 11.16.9, nova copy 15.38) |
 | **Mudanças da v1.5** | **Paleta de fundo corrigida** (16.1): `fundoCreme`/`cartaoBranco` viram `fundoTela`/`fundoCartao`, com fundo chapado — a regra 16.5.8 (gradiente na Home) foi **revogada**. **Mínimo cai para iOS 26** e o épico 8.5 vai para Vision + texto: a premissa 4.3.1 falhou na validação (4.3, 4.1, 4.2, 23.6, 17.10). Perguntas 25.2, 25.3 e 25.5 resolvidas, com carne suína opcional entrando na tabela 11.1.1. Navegação do churrasco passa a ter 4 abas (seção 10). Seções 8.5, 16.7 e 26 propagadas |
 | **Plataforma** | iOS nativo (SwiftUI), iOS 26+ |
@@ -489,6 +490,7 @@ Ordem de implementação obrigatória.
 - [ ] Enquanto o entitlement é desconhecido, a aba Conta mostra carregamento e **não** mostra paywall nem libera a feature (regra 11.16.4).
 - [ ] Exatamente as funcionalidades marcadas como pagas na tabela 11.16 ficam bloqueadas; todas as marcadas como grátis permanecem acessíveis, sem limite de quantidade e sem cronômetro.
 - [ ] O paywall lista o que a compra libera com a copy 15.28 a 15.31 e deixa explícito que é pagamento único, não assinatura.
+- [ ] A aba Conta bloqueada **é** o paywall, com o botão de compra visível sem nenhum toque intermediário (regra 11.16.2).
 - [ ] Produto que não carrega da App Store mostra a copy 15.38 e um botão de nova tentativa, nunca um botão desabilitado sem explicação (regra 11.16.9).
 - [ ] Compra cancelada pelo usuário volta ao paywall sem mensagem de erro.
 - [ ] Falha de compra mostra a copy 15.32 e mantém o usuário no paywall.
@@ -572,7 +574,7 @@ Perfil único; sem rótulo de perfil. Navegação: `NavigationStack` com Home na
 | 10.13 | **Detalhe do participante** | Composição do valor dele, linha a linha, com o motivo de cada inclusão/exclusão | Voltar | tudo | — |
 | 10.14 | **Como foi?** | Campo de texto livre pós-evento | Salvar, pular | `registro_pos_evento` | `registro_pos_evento` |
 | 10.15 | **Ajustes** | Sobre, política de privacidade, restaurar compra, apagar todos os dados | Restaurar compra, apagar tudo (com dupla confirmação) | — | todas |
-| 10.16 | **Paywall** | O que a compra libera, preço vindo do StoreKit, botão de compra e restaurar | Comprar, restaurar, fechar | — | — |
+| 10.16 | **Paywall** | O que a compra libera, preço vindo do StoreKit, botão de compra e restaurar. **É o conteúdo da aba Conta** quando o entitlement é `naoComprado` (regra 11.16.2), não uma folha por cima dela | Comprar, restaurar | — | — |
 
 ---
 
@@ -739,6 +741,8 @@ Modelo: **freemium por feature**, com **compra única não-consumível de R$ 19,
 **11.16.1** — A fronteira é exatamente esta: **planejar é grátis, dividir a conta é pago**. A parte grátis é um produto completo e útil sozinho; ela existe para gerar uso e boca a boca, não como demonstração mutilada.
 
 **11.16.2** — O bloqueio acontece **na entrada da tela 10.7 (Conta do churrasco)**. Toda a área de conta fica atrás do paywall, incluindo o lançamento manual — senão o usuário digita os itens à mão e a feature paga perde o sentido.
+
+Com o entitlement `naoComprado`, a aba Conta **é** a tela 10.16: o paywall inteiro, com o botão de compra à vista. Não existe tela intermediária de teaser. A versão anterior tinha uma, e ela mostrava o mesmo título, o mesmo subtítulo e a mesma ilustração do paywall que abria em seguida — tocar em "ver o que a compra libera" parecia não fazer nada. Tela que só repete a anterior é passo de navegação sem função.
 
 **11.16.3** — Nenhum dado é destruído ou escondido pela falta de compra. Se o usuário comprar depois, tudo que ele já tinha cadastrado continua lá.
 
@@ -1227,6 +1231,7 @@ O que ficou diferente do escrito, e por quê. Sem esta lista o documento envelhe
 | 24.14.5 | Dois campos novos em `churrasco`: `inclui_carne_suina` e `ajuste_historico_ligado` | Consequências diretas da decisão 25.3 e do critério "o usuário pode desligar o ajuste com um toque" do épico 8.9 |
 | 24.14.6 | Telas de lista usam `List` do SwiftUI, não `ScrollView` + `LazyVStack` | O swipe para excluir (10.1, 10.5) **só funciona dentro de uma `List`**; fora dela `swipeActions` é ignorado em silêncio. O visual de card da seção 16.3 é preservado escondendo fundo e separador de linha |
 | 24.14.7 | O título grande da barra de navegação ainda trunca em AX5 | Comportamento do próprio iOS para `.navigationTitle`, igual ao dos apps da Apple. **Todo o conteúdo** das telas respeita o critério 8.11 sem corte |
+| 24.14.10 | Existe um atalho de liberação da conta em **`#if DEBUG`**, na tela de Ajustes | Sem ele não há como exercitar rateio, atribuição e compartilhamento em aparelho enquanto `carne_assada_pro` não existir no App Store Connect. Verificado por `strings` que não aparece no binário de Release. Sai do código quando o produto existir |
 | 24.14.9 | A dica 15.37 aparece uma vez e some para sempre com "Entendi" (`AppStorage`) | Toque para editar e arrastar para excluir são gestos padrão do iOS, mas **não são óbvios num card** — o usuário reconhece o padrão numa linha de tabela, não num card solto. Dica permanente viraria ruído em quem já aprendeu |
 | 24.14.8 | O rateio é recalculado a cada leitura, nunca gravado | Garante que a exceção 9.2.7 (participante excluído depois do fechamento) não deixe valor velho em tela |
 

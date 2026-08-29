@@ -51,6 +51,22 @@ struct AjustesView: View {
                     Text(Copy.promessaDeCompraUnica)
                 }
 
+#if DEBUG
+                // Atalho de teste, ausente do binário de Release. Some quando o produto
+                // `carne_assada_pro` existir no App Store Connect.
+                Section {
+                    Button(entitlement.liberado
+                           ? "Trancar a conta de novo"
+                           : "Liberar a conta sem comprar") {
+                        entitlement.alternarLiberacaoDeTeste()
+                    }
+                } header: {
+                    Text("Só em teste")
+                } footer: {
+                    Text("Atalho de desenvolvimento para exercitar o rateio sem passar pela loja. Não existe na versão publicada.")
+                }
+#endif
+
                 // MARK: Privacidade
                 Section {
                     Label("Nada sai deste aparelho", systemImage: "iphone")

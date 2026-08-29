@@ -10,6 +10,13 @@ import StoreKit
 /// em outra moeda e em mudança futura sem tocar no binário.
 struct PaywallView: View {
 
+    /// `true` quando o paywall é o **próprio conteúdo** da aba Conta, e não uma folha.
+    ///
+    /// É o padrão. A aba bloqueada e o paywall diziam a mesma coisa, com o mesmo título,
+    /// o mesmo subtítulo e a mesma ilustração — tocar em "ver o que a compra libera"
+    /// parecia não fazer nada. Uma tela só, com o botão de comprar já à vista.
+    var dentroDaAba = true
+
     @Environment(EntitlementService.self) private var entitlement
     @Environment(\.dismiss) private var fechar
 
@@ -78,10 +85,20 @@ struct PaywallView: View {
                     .font(.subheadline)
                     .disabled(restaurando)
 
+                // Regra 11.16.3: nada do que ele já cadastrou some por não ter comprado.
+                // Dito aqui porque é aqui que a dúvida aparece — de pé no paywall.
+                if dentroDaAba {
+                    Text("Tudo que você já cadastrou continua aqui.")
+                        .estiloLegenda()
+                        .multilineTextAlignment(.center)
+                }
+
                 Spacer(minLength: 8)
             }
             .padding(.horizontal, Metrica.margemLateral)
-            .padding(.bottom, 20)
+            // Dentro da aba, a tab bar flutuante do iOS 26 passa por cima do fim do
+            // conteúdo: sem esta folga, o botão de compra fica atrás dela.
+            .padding(.bottom, dentroDaAba ? 72 : 20)
         }
         .background(Paleta.fundoTela)
         .task {
@@ -92,8 +109,12 @@ struct PaywallView: View {
         .navigationTitle("Dividir a conta")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Fechar") { fechar() }
+            // Numa folha o usuário precisa de saída; dentro da aba, a própria tab bar
+            // já é a saída, e um "Fechar" ali só confundiria.
+            if !dentroDaAba {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Fechar") { fechar() }
+                }
             }
         }
     }
@@ -147,7 +168,9 @@ struct PaywallView: View {
             switch await entitlement.comprar() {
             case .comprou:
                 // Critério 8.10: cai direto na tela de conta, sem passo intermediário.
-                fechar()
+                // Dentro da aba isso é automático — o estado do entitlement muda e a
+                // `ContaView` troca o conteúdo sozinha, sem nada para fechar.
+                if !dentroDaAba { fechar() }
             case .cancelou:
                 // Cancelamento volta ao paywall **sem mensagem de erro** (épico 8.10).
                 break
@@ -170,8 +193,10 @@ struct PaywallView: View {
             case .restaurou:
                 corDaMensagem = Paleta.limaoVerde
                 mensagem = Copy.restauracaoComSucesso
-                try? await Task.sleep(for: .seconds(1))
-                fechar()
+                if !dentroDaAba {
+                    try? await Task.sleep(for: .seconds(1))
+                    fechar()
+                }
             case .nadaEncontrado:
                 // Não é erro (épico 8.10): é informação, e sai na cor de atenção.
                 corDaMensagem = Paleta.atencao
