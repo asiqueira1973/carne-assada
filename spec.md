@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Produto** | Carne Assada — planejador e divisor de conta de churrasco |
-| **Versão do documento** | 1.7 |
+| **Versão do documento** | 1.8 |
 | **Autor / responsável de produto** | Alexandre Siqueira (Dab Lab) |
 | **Status** | implementado — MVP construído; pendências de validação em aparelho listadas na seção 26 |
 | **Data** | 29 de agosto de 2026 |
@@ -11,6 +11,7 @@
 | **Mudanças da v1.2** | Compra única cobre todas as releases futuras (regra 11.16.8); copy 15.36; pergunta 25.6 resolvida; seções 24 e 28.0 propagadas |
 | **Mudanças da v1.3** | Ilustrações e ícone do app passam a ser assets fornecidos, não desenhados em código (nova seção 16.7); seções 16.3, 16.6, 17.7, 18.3, 26 e 27 propagadas |
 | **Mudanças da v1.4** | Ilustrações passam de PNG para SVG (16.7, nova regra 16.7.1.1); alvo de binário volta a 30 MB (17.7) |
+| **Mudanças da v1.8** | Rodada de correção de layout e de toque a partir do teste em aparelho: nova regra **17.6.1** (área de toque real, não só visual) e nova regra **9.2.2** com caminho de saída. Cards de item de compra e de participante reconstruídos em linhas |
 | **Mudanças da v1.7** | A aba Conta bloqueada **é** o paywall, não uma antessala dele (regra 11.16.2 reescrita, seção 10 propagada): as duas telas diziam a mesma coisa e tocar parecia não fazer nada |
 | **Mudanças da v1.6** | Feedback do primeiro teste em aparelho. Sair do modo mercado **nunca** depende de ter marcado tudo, e o item vira removível ali mesmo (8.4, nova regra 11.17). Dica de uso na lista de compras (nova copy 15.37). Paywall deixa de virar beco sem saída quando o produto não carrega da App Store (8.10, nova regra 11.16.9, nova copy 15.38) |
 | **Mudanças da v1.5** | **Paleta de fundo corrigida** (16.1): `fundoCreme`/`cartaoBranco` viram `fundoTela`/`fundoCartao`, com fundo chapado — a regra 16.5.8 (gradiente na Home) foi **revogada**. **Mínimo cai para iOS 26** e o épico 8.5 vai para Vision + texto: a premissa 4.3.1 falhou na validação (4.3, 4.1, 4.2, 23.6, 17.10). Perguntas 25.2, 25.3 e 25.5 resolvidas, com carne suína opcional entrando na tabela 11.1.1. Navegação do churrasco passa a ter 4 abas (seção 10). Seções 8.5, 16.7 e 26 propagadas |
@@ -533,7 +534,7 @@ Ordem de implementação obrigatória.
 | # | Exceção | Comportamento |
 |---|---|---|
 | 9.2.1 | Aparelho sem Apple Intelligence, ou desligada | Todos os pontos de IA somem da UI (não ficam desabilitados) e o caminho manual equivalente assume. O app é 100% funcional. Copy 15.7 |
-| 9.2.2 | Usuário nunca cadastra participantes | "Fechar a conta" mostra a copy 15.15 e leva ao cadastro. Não é possível ratear sem pelo menos 1 participante |
+| 9.2.2 | Usuário nunca cadastra participantes | "Fechar a conta" mostra a copy 15.15 **e oferece o cadastro ali mesmo**, num botão que abre a tela 10.10. Pergunta sem caminho de resposta é beco sem saída. Não é possível ratear sem pelo menos 1 participante |
 | 9.2.3 | Usuário fotografa a nota antes de cadastrar participantes | Permitido. A revisão dos itens não depende de participante |
 | 9.2.4 | Churrasco sem nenhuma compra, só lista | "Fechar a conta" fica indisponível com a copy 15.13. A lista de compras continua utilizável |
 | 9.2.5 | Duas notas fiscais no mesmo churrasco | Suportado: cada `compra` é independente e todos os itens confirmados entram no mesmo rateio |
@@ -1031,6 +1032,7 @@ Por que SVG: escala sem perda em qualquer tamanho e densidade de tela, dispensa 
 | 17.4 | Recálculo do rateio | < 300 ms para 50 itens × 30 participantes |
 | 17.5 | Offline | 100% das funções operam em modo avião, sem exceção |
 | 17.6 | Acessibilidade | Dynamic Type até AX5; contraste ≥ 4,5:1; VoiceOver em todos os elementos interativos; toque ≥ 44×44 pt; Reduzir Movimento respeitado |
+| 17.6.1 | Área de toque **real** | Os 44 pt da 17.6 valem para a região que responde ao dedo, não para o desenho. Três armadilhas conhecidas do SwiftUI, todas encontradas em teste de aparelho: (a) `padding` aplicado **depois** de um `TextField` aumenta o quadro mas **não** a área sensível — precisa de `contentShape` mais `FocusState`; (b) botão de texto puro tem como alvo só o retângulo das letras; (c) a tab bar flutuante do iOS 26 é desenhada por cima do fim do conteúdo, então toda tela dentro de aba precisa de folga no rodapé |
 | 17.7 | Tamanho do binário | < 30 MB. **Medido na v1.5: 3,4 MB** no `.app` de Release, sendo 2,1 MB de `Assets.car` e 1,3 MB de binário |
 | 17.8 | Bateria | Nenhum processamento em background; nenhuma inferência sem ação explícita do usuário |
 | 17.9 | Volume de dados | Até 200 churrascos, 100 participantes e 300 itens por churrasco sem degradação perceptível |
@@ -1231,6 +1233,8 @@ O que ficou diferente do escrito, e por quê. Sem esta lista o documento envelhe
 | 24.14.5 | Dois campos novos em `churrasco`: `inclui_carne_suina` e `ajuste_historico_ligado` | Consequências diretas da decisão 25.3 e do critério "o usuário pode desligar o ajuste com um toque" do épico 8.9 |
 | 24.14.6 | Telas de lista usam `List` do SwiftUI, não `ScrollView` + `LazyVStack` | O swipe para excluir (10.1, 10.5) **só funciona dentro de uma `List`**; fora dela `swipeActions` é ignorado em silêncio. O visual de card da seção 16.3 é preservado escondendo fundo e separador de linha |
 | 24.14.7 | O título grande da barra de navegação ainda trunca em AX5 | Comportamento do próprio iOS para `.navigationTitle`, igual ao dos apps da Apple. **Todo o conteúdo** das telas respeita o critério 8.11 sem corte |
+| 24.14.11 | Cards de item de compra (10.9) e de participante (10.10) são **linhas empilhadas com divisor**, não campos lado a lado | Lado a lado, o `Picker` não tinha largura para o rótulo e quebrava "Quem come" em quatro linhas verticais; e as linhas de marcador encolhiam para a altura do texto, fazendo os interruptores se sobreporem. Uma informação por linha resolve os dois e ainda garante os 44 pt da regra 17.6.1 |
+| 24.14.12 | A tela 10.7 usa **um** `.sheet(item:)` em vez de dois `.sheet(isPresented:)` | Dois `.sheet` empilhados na mesma view é fragilidade conhecida do SwiftUI: um deles pode não apresentar, sem erro nenhum |
 | 24.14.10 | Existe um atalho de liberação da conta em **`#if DEBUG`**, na tela de Ajustes | Sem ele não há como exercitar rateio, atribuição e compartilhamento em aparelho enquanto `carne_assada_pro` não existir no App Store Connect. Verificado por `strings` que não aparece no binário de Release. Sai do código quando o produto existir |
 | 24.14.9 | A dica 15.37 aparece uma vez e some para sempre com "Entendi" (`AppStorage`) | Toque para editar e arrastar para excluir são gestos padrão do iOS, mas **não são óbvios num card** — o usuário reconhece o padrão numa linha de tabela, não num card solto. Dica permanente viraria ruído em quem já aprendeu |
 | 24.14.8 | O rateio é recalculado a cada leitura, nunca gravado | Garante que a exceção 9.2.7 (participante excluído depois do fechamento) não deixe valor velho em tela |

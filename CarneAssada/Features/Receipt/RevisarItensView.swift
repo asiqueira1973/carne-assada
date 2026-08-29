@@ -233,46 +233,15 @@ private struct CardDeItemEditavel: View {
     let aoRemover: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                TextField("Descrição do item", text: $descricao)
-                    .font(.body)
-
-                // Item pendente é marcado **visualmente**, e nunca recebe valor estimado
-                // (regra 11.10.2). Fica de fora do rateio até alguém digitar o número.
-                if pendente {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(Paleta.atencao)
-                        .accessibilityLabel("Sem valor")
-                }
-
-                Button(role: .destructive, action: aoRemover) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Paleta.erro)
-                .accessibilityLabel("Remover item")
-            }
-
-            HStack(spacing: 12) {
-                Text("R$").estiloLegenda()
-                TextField("0,00", text: $valorTexto)
-                    .keyboardType(.decimalPad)
-                    .font(.body.monospacedDigit())
-                    .frame(width: 100)
-
-                Spacer()
-
-                Picker("", selection: $categoria) {
-                    ForEach(categoria_rateio.allCases, id: \.self) {
-                        Text($0.rotulo).tag($0)
-                    }
-                }
-                .labelsHidden()
-                .tint(categoria.cor)
-            }
+        VStack(alignment: .leading, spacing: 0) {
+            LinhaDeDescricao(descricao: $descricao, pendente: pendente, aoRemover: aoRemover)
+            Divider()
+            LinhaDeValor(valorTexto: $valorTexto)
+            Divider()
+            LinhaDeCategoria(categoria: $categoria)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 4)
         .cartao()
         .overlay(alignment: .leading) {
             if pendente {
@@ -295,62 +264,40 @@ private struct CardDeItemGravado: View {
     @State private var abrindoAtribuicao = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                TextField("Descrição do item", text: $item.descricao)
-                    .font(.body)
-
-                if item.pendente {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(Paleta.atencao)
-                        .accessibilityLabel("Sem valor")
-                }
-
-                Button(role: .destructive) {
-                    contexto.delete(item)
-                    try? contexto.save()
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Paleta.erro)
-                .accessibilityLabel("Remover item")
+        VStack(alignment: .leading, spacing: 0) {
+            LinhaDeDescricao(descricao: $item.descricao, pendente: item.pendente) {
+                contexto.delete(item)
+                try? contexto.save()
             }
-
-            HStack(spacing: 12) {
-                Text("R$").estiloLegenda()
-                TextField("0,00", text: $valorTexto)
-                    .keyboardType(.decimalPad)
-                    .font(.body.monospacedDigit())
-                    .frame(width: 100)
-                    .onChange(of: valorTexto) { _, novo in gravarValor(novo) }
-
-                Spacer()
-
-                Picker("", selection: $item.categoria) {
-                    ForEach(categoria_rateio.allCases, id: \.self) {
-                        Text($0.rotulo).tag($0)
-                    }
-                }
-                .labelsHidden()
-                .tint(item.categoria.cor)
-            }
+            Divider()
+            LinhaDeValor(valorTexto: $valorTexto)
+                .onChange(of: valorTexto) { _, novo in gravarValor(novo) }
+            Divider()
+            LinhaDeCategoria(categoria: $item.categoria)
+            Divider()
 
             // Regra 11.5: sem atribuição, o item segue a categoria. Com atribuição,
             // divide igualmente só entre os marcados.
             Button {
                 abrindoAtribuicao = true
             } label: {
-                Label(
-                    item.atribuicoes.isEmpty
-                        ? "Quem consumiu?"
-                        : "\(item.atribuicoes.count) marcado(s)",
-                    systemImage: "person.2"
-                )
-                .font(.footnote)
+                HStack(spacing: 8) {
+                    Image(systemName: "person.2")
+                    Text(item.atribuicoes.isEmpty
+                         ? "Quem consumiu?"
+                         : "\(item.atribuicoes.count) marcado(s)")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Paleta.textoSecundario)
+                }
+                .font(.subheadline)
+                .frame(minHeight: Metrica.toqueMinimo)
+                .contentShape(.rect)
             }
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 4)
         .cartao()
         .onAppear {
             valorTexto = item.valor_total.map(Formatacao.numeroMonetario) ?? ""
@@ -372,6 +319,87 @@ private struct CardDeItemGravado: View {
             item.valor_total = valor
         }
         try? contexto.save()
+    }
+}
+
+// MARK: - Linhas do card de item
+
+/// As três linhas do card de item de compra.
+///
+/// Elas existem separadas, empilhadas com divisor e com **altura mínima de toque**, porque
+/// a versão anterior punha valor e categoria lado a lado num `HStack`: o `Picker` não tinha
+/// largura para o rótulo, quebrava "Quem come" em quatro linhas verticais, e as linhas do
+/// card acabavam se sobrepondo. Uma informação por linha resolve, e de quebra cada campo
+/// passa a respeitar os 44 pt do requisito 17.6.
+
+private struct LinhaDeDescricao: View {
+    @Binding var descricao: String
+    let pendente: Bool
+    let aoRemover: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            TextField("Descrição do item", text: $descricao)
+                .font(.body)
+
+            // Item pendente é marcado **visualmente**, e nunca recebe valor estimado
+            // (regra 11.10.2). Fica de fora do rateio até alguém digitar o número.
+            if pendente {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(Paleta.atencao)
+                    .accessibilityLabel("Sem valor")
+            }
+
+            Button(role: .destructive, action: aoRemover) {
+                Image(systemName: "trash")
+                    .frame(width: 32, height: Metrica.toqueMinimo)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Paleta.erro)
+            .accessibilityLabel("Remover item")
+        }
+        .frame(minHeight: Metrica.toqueMinimo)
+    }
+}
+
+private struct LinhaDeValor: View {
+    @Binding var valorTexto: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("Valor").font(.subheadline).foregroundStyle(Paleta.textoSecundario)
+            Spacer()
+            Text("R$").estiloLegenda()
+            TextField("0,00", text: $valorTexto)
+                .keyboardType(.decimalPad)
+                .font(.body.monospacedDigit())
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 110)
+        }
+        .frame(minHeight: Metrica.toqueMinimo)
+    }
+}
+
+private struct LinhaDeCategoria: View {
+    @Binding var categoria: categoria_rateio
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("Divide entre").font(.subheadline).foregroundStyle(Paleta.textoSecundario)
+            Spacer()
+            Picker("Divide entre", selection: $categoria) {
+                ForEach(categoria_rateio.allCases, id: \.self) {
+                    Text($0.rotulo).tag($0)
+                }
+            }
+            .labelsHidden()
+            // `fixedSize` impede o rótulo do menu de quebrar em linhas verticais quando
+            // o espaço aperta — era exatamente o que deformava o card.
+            .fixedSize()
+            .tint(categoria.cor)
+        }
+        .frame(minHeight: Metrica.toqueMinimo)
     }
 }
 

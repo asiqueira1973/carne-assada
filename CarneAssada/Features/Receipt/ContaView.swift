@@ -17,8 +17,17 @@ struct ContaView: View {
     @Environment(EntitlementService.self) private var entitlement
     @Environment(ModelAvailabilityService.self) private var disponibilidade
 
-    @State private var capturandoNota = false
-    @State private var lancandoManual = false
+    /// Um `.sheet` só, escolhido por item.
+    ///
+    /// Dois `.sheet(isPresented:)` empilhados na **mesma** view é fragilidade conhecida do
+    /// SwiftUI: um deles pode simplesmente não apresentar, sem erro nenhum. Com um item
+    /// enumerado existe uma apresentação só, e ela sempre sabe o que mostrar.
+    private enum FolhaDaConta: Identifiable {
+        case camera, manual
+        var id: Self { self }
+    }
+
+    @State private var folha: FolhaDaConta?
 
     private var itensConfirmados: [item_compra] {
         evento.compras.flatMap(\.itens).filter(\.entra_no_rateio)
@@ -43,11 +52,11 @@ struct ContaView: View {
                 }
             }
             .navigationTitle("A conta")
-            .sheet(isPresented: $capturandoNota) {
-                CapturarNotaView(evento: evento)
-            }
-            .sheet(isPresented: $lancandoManual) {
-                LancamentoManualView(evento: evento)
+            .sheet(item: $folha) { qual in
+                switch qual {
+                case .camera: CapturarNotaView(evento: evento)
+                case .manual: LancamentoManualView(evento: evento)
+                }
             }
         }
     }
@@ -104,7 +113,9 @@ struct ContaView: View {
             botoesDeEntrada
         }
         .padding(.horizontal, Metrica.margemLateral)
-        .padding(.bottom, 14)
+        // A tab bar flutuante do iOS 26 passa por cima do fim do conteúdo. Sem esta
+        // folga o aviso e o botão de lançamento manual ficam colados nela, e o toque erra.
+        .padding(.bottom, Metrica.folgaDaTabBar)
     }
 
     private var comCompras: some View {
@@ -154,7 +165,7 @@ struct ContaView: View {
                 .disabled(itensConfirmados.isEmpty)
             }
             .padding(.horizontal, Metrica.margemLateral)
-            .padding(.bottom, 4)
+            .padding(.bottom, Metrica.folgaDaTabBar)
         }
     }
 
@@ -164,7 +175,7 @@ struct ContaView: View {
         VStack(spacing: 10) {
             if disponibilidade.podeUsarIA {
                 Button {
-                    capturandoNota = true
+                    folha = .camera
                 } label: {
                     Label("Ler a nota por foto", systemImage: "camera.fill")
                 }
@@ -173,8 +184,13 @@ struct ContaView: View {
                 Aviso(texto: Copy.modeloIndisponivel, cor: Paleta.brasaLaranja)
             }
 
-            Button("Lançar itens à mão") { lancandoManual = true }
+            // Botão de texto puro tem como área de toque só o retângulo das letras —
+            // uns 18 pt de altura, colado na tab bar flutuante. Na prática o toque
+            // errava. `frame` + `contentShape` devolvem os 44 pt do requisito 17.6.
+            Button("Lançar itens à mão") { folha = .manual }
                 .font(.subheadline)
+                .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+                .contentShape(.rect)
         }
     }
 

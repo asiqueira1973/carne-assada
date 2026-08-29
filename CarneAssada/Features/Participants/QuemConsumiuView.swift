@@ -106,6 +106,8 @@ struct QuemConsumiuView: View {
             if !marcados.isEmpty {
                 Button("Limpar marcação") { limpar() }
                     .font(.subheadline)
+                    .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+                    .contentShape(.rect)
                     .padding(.bottom, 12)
             }
         }

@@ -13,6 +13,8 @@ struct TurmaView: View {
 
     @State private var nomeNovo = ""
     @State private var avisoDeDuplicata: String?
+    /// O campo de nome precisa de foco explícito: ver o comentário em `campoDeAdicao`.
+    @FocusState private var campoFocado: Bool
 
     private var participantes: [participante] {
         evento.participantes.sorted { $0.ordem < $1.ordem }
@@ -78,13 +80,20 @@ struct TurmaView: View {
             }
 
             HStack(spacing: 10) {
+                // O `padding` fica **fora** da área sensível ao toque de um `TextField`:
+                // tocar na borda do card não focava nada, e o campo parecia morto. O
+                // `contentShape` + `FocusState` fazem o card inteiro virar alvo de toque,
+                // que é o que a área mínima de 44 pt do requisito 17.6 promete.
                 TextField("Nome de quem foi", text: $nomeNovo)
                     .textInputAutocapitalization(.words)
                     .submitLabel(.done)
+                    .focused($campoFocado)
                     .onSubmit { adicionar() }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .frame(minHeight: Metrica.toqueMinimo)
+                    .contentShape(.rect)
+                    .onTapGesture { campoFocado = true }
                     .cartao()
 
                 Button {
@@ -129,6 +138,8 @@ struct TurmaView: View {
         contexto.insert(pessoa)
         try? contexto.save()
         nomeNovo = ""
+        // Cadastrar turma é digitar vários nomes seguidos: o foco fica onde está.
+        campoFocado = true
     }
 
     /// Regra 11.12: excluir participante é reversível por re-adição e **não** pede confirmação.
@@ -150,38 +161,75 @@ private struct CardDeParticipante: View {
     @Environment(\.modelContext) private var contexto
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             TextField("Nome", text: $pessoa.nome)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(Paleta.carvaoEscuro)
+                .frame(minHeight: Metrica.toqueMinimo)
 
-            VStack(spacing: 8) {
-                Toggle("É criança", isOn: Binding(
-                    get: { pessoa.e_crianca },
-                    set: { novo in
-                        pessoa.e_crianca = novo
-                        // Critério 8.6: marcar criança força `bebe_alcool = false`.
-                        if novo { pessoa.bebe_alcool = false }
-                        try? contexto.save()
-                    }
-                ))
+            Divider()
 
-                Toggle("Come carne", isOn: Binding(
-                    get: { pessoa.come_carne },
-                    set: { pessoa.come_carne = $0; try? contexto.save() }
-                ))
+            // Cada marcador ganha **altura mínima de toque** explícita. Sem isso a linha
+            // encolhia para a altura do texto, o interruptor (mais alto que ela) transbordava
+            // e os três acabavam desenhados por cima uns dos outros. A altura também é o que
+            // o requisito 17.6 exige de área de toque.
+            MarcadorDoParticipante(titulo: "É criança", ligado: Binding(
+                get: { pessoa.e_crianca },
+                set: { novo in
+                    pessoa.e_crianca = novo
+                    // Critério 8.6: marcar criança força `bebe_alcool = false`.
+                    if novo { pessoa.bebe_alcool = false }
+                    try? contexto.save()
+                }
+            ))
 
-                Toggle("Bebe álcool", isOn: Binding(
+            Divider()
+
+            MarcadorDoParticipante(titulo: "Come carne", ligado: Binding(
+                get: { pessoa.come_carne },
+                set: { pessoa.come_carne = $0; try? contexto.save() }
+            ))
+
+            Divider()
+
+            MarcadorDoParticipante(
+                titulo: "Bebe álcool",
+                ligado: Binding(
                     get: { pessoa.bebe_alcool },
                     set: { pessoa.bebe_alcool = $0; try? contexto.save() }
-                ))
+                ),
                 // Criança nasce sem álcool e o campo fica bloqueado (7.3).
-                .disabled(pessoa.e_crianca)
-            }
-            .font(.subheadline)
-            .tint(Paleta.brasaLaranja)
+                bloqueado: pessoa.e_crianca,
+                notaQuandoBloqueado: "Criança não entra no rateio da bebida alcoólica."
+            )
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 4)
         .cartao()
+    }
+}
+
+/// Uma linha de marcador do participante, com altura de toque garantida.
+private struct MarcadorDoParticipante: View {
+    let titulo: String
+    @Binding var ligado: Bool
+    var bloqueado = false
+    var notaQuandoBloqueado: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Toggle(titulo, isOn: $ligado)
+                .font(.subheadline)
+                .tint(Paleta.brasaLaranja)
+                .disabled(bloqueado)
+                .frame(minHeight: Metrica.toqueMinimo)
+
+            // Campo desabilitado sem motivo parece bug. Com o motivo, é regra.
+            if bloqueado, let notaQuandoBloqueado {
+                Text(notaQuandoBloqueado)
+                    .estiloLegenda()
+                    .padding(.bottom, 6)
+            }
+        }
     }
 }

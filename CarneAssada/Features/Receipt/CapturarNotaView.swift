@@ -114,6 +114,8 @@ struct CapturarNotaView: View {
             Spacer()
             Button("Cancelar") { tarefa?.cancel(); etapa = .escolher }
                 .font(.subheadline)
+                .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+                .contentShape(.rect)
         }
         .padding(Metrica.margemLateral)
     }
@@ -133,6 +135,8 @@ struct CapturarNotaView: View {
                 .buttonStyle(BotaoPrincipal())
             Button("Lançar os itens à mão") { criarCompraVaziaEFechar() }
                 .font(.subheadline)
+                .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+                .contentShape(.rect)
         }
         .padding(.horizontal, Metrica.margemLateral)
         .padding(.bottom, 14)

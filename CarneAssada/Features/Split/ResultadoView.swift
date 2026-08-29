@@ -12,6 +12,7 @@ struct ResultadoView: View {
     @Environment(\.modelContext) private var contexto
 
     @State private var compartilhando = false
+    @State private var cadastrandoTurma = false
     @State private var valorInicial: [UUID: Decimal] = [:]
 
     /// O rateio é **derivado**, nunca armazenado: recalcular do zero a cada leitura é o que
@@ -64,6 +65,9 @@ struct ResultadoView: View {
         }
         .navigationTitle(Copy.tituloDoResultado)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $cadastrandoTurma) {
+            TurmaView(evento: evento)
+        }
         .sheet(isPresented: $compartilhando) {
             CompartilharView(texto: textoParaCompartilhar) {
                 // Seção 12: compartilhar o resultado conclui o churrasco.
@@ -75,15 +79,25 @@ struct ResultadoView: View {
         }
     }
 
+    /// Exceção 9.2.2: a copy 15.15 **leva ao cadastro**, não fica só avisando.
+    ///
+    /// Sem o botão, quem fechava a conta antes de cadastrar a turma caía numa tela que
+    /// pedia os nomes e não oferecia nenhum jeito de dá-los — só descobria a aba Turma
+    /// por conta própria. Pergunta sem caminho de resposta é beco sem saída.
     private var estadoSemParticipantes: some View {
         VStack(spacing: 22) {
+            Spacer()
             Ilustracao(asset: .turmaDeAmigos, altura: 180)
             Text(Copy.semParticipantes)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(Paleta.carvaoEscuro)
                 .multilineTextAlignment(.center)
+            Spacer()
+            Button("Cadastrar quem foi") { cadastrandoTurma = true }
+                .buttonStyle(BotaoPrincipal())
         }
-        .padding(Metrica.margemLateral)
+        .padding(.horizontal, Metrica.margemLateral)
+        .padding(.bottom, 14)
     }
 
     private var estadoSemItens: some View {

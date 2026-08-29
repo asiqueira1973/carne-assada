@@ -15,6 +15,12 @@ enum Metrica {
     static let toqueMinimo: CGFloat = 44
     /// Tamanho de renderização dos ícones de categoria (16.7.5).
     static let iconeCategoria: CGFloat = 28
+    /// Folga no rodapé das telas que ficam dentro de uma aba.
+    ///
+    /// A tab bar flutuante do iOS 26 é desenhada **por cima** do fim do conteúdo. Sem esta
+    /// folga o último controle da tela fica colado nela e o toque erra — foi o que
+    /// aconteceu com o "Lançar itens à mão" da tela 10.7.
+    static let folgaDaTabBar: CGFloat = 64
 }
 
 // MARK: - Card (16.3)

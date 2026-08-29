@@ -90,7 +90,8 @@ struct DescreverTurmaView: View {
                 withAnimation(.easeInOut(duration: 0.2)) { etapa = .parametros }
             }
             .font(.subheadline)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+            .contentShape(.rect)
         }
         .padding(Metrica.margemLateral)
     }
@@ -111,6 +112,8 @@ struct DescreverTurmaView: View {
                 etapa = .parametros
             }
             .font(.subheadline)
+            .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+            .contentShape(.rect)
         }
         .padding(Metrica.margemLateral)
     }

@@ -6,7 +6,7 @@ Regra de manutenção: qualquer mudança em modelo, serviço ou lógica de tela 
 
 | | |
 |---|---|
-| Versão do spec implementada | 1.7 |
+| Versão do spec implementada | 1.8 |
 | Plataforma | iOS 26.0+, iPhone, retrato |
 | Stack | Swift 6 (concorrência estrita), SwiftUI, SwiftData, Foundation Models, Vision, StoreKit 2 |
 | Dependências externas | nenhuma |
@@ -348,6 +348,9 @@ O cadeado aparece no ícone da aba desde o início — não só ao tocar (mitiga
 
 ### Capturar e revisar nota (10.8/10.9)
 
+O card de item é **quatro linhas empilhadas com divisor** — descrição, valor, "divide entre" e "quem consumiu?" — cada uma com altura mínima de toque. A versão anterior punha valor e categoria lado a lado: o `Picker` ficava sem largura para o rótulo, quebrava "Quem come" em quatro linhas verticais e as linhas do card se sobrepunham. O `Picker` leva `fixedSize()` para nunca mais quebrar.
+
+
 A `UIImage` existe apenas dentro do escopo de processamento. Nada é escrito em disco, em cache ou no álbum.
 
 O rascunho da revisão vive em `@State`, fora do store. Valor ilegível vem **em branco** e o card ganha uma faixa de atenção na lateral. Divergência acima de R$ 0,05 com o total da nota mostra a copy 15.11 e **não bloqueia**.
@@ -357,6 +360,8 @@ Só "Confirmar todos" cria a `compra` e os `item_compra`, todos com `confirmado 
 Numa nota já gravada, apagar o campo de valor devolve o item a `nil` — ele volta a ser pendente e sai do rateio, em vez de virar R$ 0,00 e entrar como se fosse de graça.
 
 ### Turma (10.10)
+
+Mesmo tratamento do card de item: os três marcadores são linhas com altura mínima de toque, separadas por divisor. Sem a altura explícita a linha encolhia para o tamanho do texto, o interruptor transbordava e os três apareciam desenhados por cima uns dos outros. Quando o participante é criança, o marcador de álcool fica bloqueado **com o motivo escrito** — campo desabilitado sem explicação parece bug.
 
 Adicionar exige só o nome. Nome duplicado vira `" (2)"` com aviso: dois "João" no rateio é erro garantido na hora de cobrar.
 
@@ -393,6 +398,18 @@ Copies 15.28 a 15.31 e 15.36. O botão exibe `Product.displayPrice`; enquanto o 
 `EntitlementService` expõe `carregandoProduto` justamente para o paywall separar dois estados que pareciam um só: **carregando** mostra progresso; **não carregou** mostra a copy 15.38 e um botão de nova tentativa (regra 11.16.9). Antes os dois viravam o mesmo botão cinza, sem explicação — e o usuário ficava preso no paywall sem saber por quê. O paywall também reconsulta o produto ao abrir.
 
 Cancelamento volta ao paywall **sem mensagem**. Restauração sem compra não é erro: sai em cor de atenção com a copy 15.33.
+
+---
+
+## 6.1 Área de toque: três armadilhas do SwiftUI
+
+Todas apareceram no primeiro teste em aparelho, e todas passam pelo compilador sem um aviso.
+
+1. **`padding` depois de um `TextField` não aumenta a área sensível.** O quadro cresce, o alvo do dedo não. Tocar na borda do card não focava nada e o campo parecia morto. Correção: `contentShape(.rect)` mais `@FocusState`, com `onTapGesture` dando o foco.
+2. **Botão de texto puro tem como alvo só o retângulo das letras** — uns 18 pt de altura. Todos os botões de texto secundário do app agora levam `frame(minHeight: Metrica.toqueMinimo)` e `contentShape(.rect)`.
+3. **A tab bar flutuante do iOS 26 é desenhada por cima do fim do conteúdo.** Toda tela dentro de aba reserva `Metrica.folgaDaTabBar` no rodapé; sem isso o último controle fica sob a barra e o toque erra.
+
+Vale a mesma regra para **dois `.sheet(isPresented:)` na mesma view**: é fragilidade conhecida do SwiftUI, um deles pode não apresentar sem erro nenhum. A tela 10.7 usa um `.sheet(item:)` com enum.
 
 ---
 
@@ -439,6 +456,8 @@ Sem esta seção o documento envelhece mentindo. Todas estão também na seção
 | 6 | Telas de lista usam `List`, não `ScrollView` + `LazyVStack` | `swipeActions` **só funciona dentro de uma `List`**; fora dela é ignorado em silêncio. O visual de card é preservado escondendo fundo e separador |
 | 7 | O título grande da barra de navegação trunca em AX5 | Comportamento do próprio iOS, igual ao dos apps da Apple. Todo o **conteúdo** das telas respeita o critério 8.11 |
 | 8 | O rateio não é gravado; é recalculado a cada leitura | Garante que a exceção 9.2.7 nunca deixe valor velho em tela |
+| 13 | Um `.sheet(item:)` na tela 10.7, em vez de dois `.sheet(isPresented:)` | Dois `.sheet` na mesma view podem não apresentar, sem erro |
+| 12 | Cards de item e de participante em linhas empilhadas, não campos lado a lado | Lado a lado o picker quebrava e as linhas se sobrepunham. Ver a seção 6.1 |
 | 11 | Atalho de liberação da conta em `#if DEBUG`, na tela de Ajustes | Permite exercitar o rateio em aparelho enquanto `carne_assada_pro` não existe no App Store Connect. Verificado por `strings` que não aparece no binário de Release. Remover quando o produto existir |
 | 10 | A dica de uso 15.37 aparece uma vez e some com "Entendi" | Os gestos padrão do iOS não se anunciam num card. Feedback do primeiro teste em aparelho |
 | 9 | 17 SVG, não 15 | 8 ilustrações de tela + 6 ícones de categoria + 3 partículas de brasa. O spec contava só as ilustrações |

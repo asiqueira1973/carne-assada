@@ -83,6 +83,8 @@ struct PaywallView: View {
 
                 Button(Copy.botaoRestaurar) { restaurar() }
                     .font(.subheadline)
+                    .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+                    .contentShape(.rect)
                     .disabled(restaurando)
 
                 // Regra 11.16.3: nada do que ele já cadastrou some por não ter comprado.
@@ -98,7 +100,7 @@ struct PaywallView: View {
             .padding(.horizontal, Metrica.margemLateral)
             // Dentro da aba, a tab bar flutuante do iOS 26 passa por cima do fim do
             // conteúdo: sem esta folga, o botão de compra fica atrás dela.
-            .padding(.bottom, dentroDaAba ? 72 : 20)
+            .padding(.bottom, dentroDaAba ? Metrica.folgaDaTabBar + 12 : 20)
         }
         .background(Paleta.fundoTela)
         .task {

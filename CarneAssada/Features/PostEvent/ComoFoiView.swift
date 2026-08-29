@@ -67,6 +67,8 @@ struct ComoFoiView: View {
 
                     Button("Agora não") { fechar() }
                         .font(.subheadline)
+                        .frame(maxWidth: .infinity, minHeight: Metrica.toqueMinimo)
+                        .contentShape(.rect)
                 }
                 .padding(.horizontal, Metrica.margemLateral)
                 .padding(.bottom, 14)
