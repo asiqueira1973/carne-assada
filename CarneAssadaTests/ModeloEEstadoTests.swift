@@ -33,6 +33,49 @@ struct MaquinaDeEstadosTests {
         #expect(evento.irPara(.comprando))
         #expect(evento.status == .comprando)
     }
+
+    // MARK: - Regra 12.1 (regressão)
+
+    @Test("Regra 12.1 — abrir o modo mercado avança a partir de planejando")
+    func modoMercadoAvancaDePlanejando() {
+        let evento = churrasco(nome: "Teste")
+        #expect(evento.status == .planejando)
+        #expect(evento.entrouNoModoMercado())
+        #expect(evento.status == .comprando)
+    }
+
+    /// Regressão do bug reportado em uso: com o mercado como aba, o `onAppear` dispara a
+    /// cada olhada. Um churrasco já em `fechando_conta` voltava sozinho para `comprando`,
+    /// e o histórico ficava eternamente marcado como "no mercado".
+    @Test("Regra 12.1 — abrir o modo mercado NÃO regride quem já está fechando a conta")
+    func modoMercadoNaoRegride() {
+        let evento = churrasco(nome: "Teste")
+        evento.irPara(.fechando_conta)
+        #expect(evento.status == .fechando_conta)
+
+        // Várias visitas seguidas à aba, como acontece de verdade.
+        for _ in 0..<5 {
+            #expect(evento.entrouNoModoMercado() == false)
+        }
+        #expect(evento.status == .fechando_conta)
+    }
+
+    @Test("Regra 12.1 — churrasco concluído também não volta para o mercado")
+    func modoMercadoNaoRegrideConcluido() {
+        let evento = churrasco(nome: "Teste")
+        evento.irPara(.fechando_conta)
+        evento.irPara(.concluido)
+        #expect(evento.entrouNoModoMercado() == false)
+        #expect(evento.status == .concluido)
+    }
+
+    @Test("Regra 12.1 — reabrir o mercado já estando comprando não faz nada")
+    func modoMercadoIdempotente() {
+        let evento = churrasco(nome: "Teste")
+        #expect(evento.entrouNoModoMercado())
+        #expect(evento.entrouNoModoMercado() == false)
+        #expect(evento.status == .comprando)
+    }
 }
 
 @MainActor

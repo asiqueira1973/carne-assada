@@ -11,7 +11,11 @@ enum status_churrasco: String, Codable, CaseIterable, Sendable {
     case fechando_conta
     case concluido
 
-    /// Rótulo curto para o chip da Home (tela 10.1).
+    /// Rótulo curto do status, em linguagem de usuário.
+    ///
+    /// **Não é renderizado em nenhuma tela hoje** — o chip da Home saiu na v1.1 por decisão
+    /// de produto. Fica aqui como o vocabulário dos estados da seção 12, que continuam
+    /// governando o fluxo (o botão "Como foi?" depende de `concluido`, por exemplo).
     var rotulo: String {
         switch self {
         case .planejando: "Lista pronta"
@@ -21,7 +25,8 @@ enum status_churrasco: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    /// Cor do chip. Cor de marca, não semântica — status aqui é informação, não estado de erro.
+    /// Cor do status. Cor de marca, não semântica — status é informação, não estado de erro.
+    /// Também sem uso em tela hoje; ver a nota em `rotulo`.
     var cor: Color {
         switch self {
         case .planejando: Paleta.cervejaDourado

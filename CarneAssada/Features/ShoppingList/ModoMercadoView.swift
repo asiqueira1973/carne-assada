@@ -43,8 +43,9 @@ struct ModoMercadoView: View {
         // Ninguém quer destravar o celular a cada item no corredor do mercado.
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
-            // Seção 12: abrir o modo mercado pela primeira vez leva a `comprando`.
-            if evento.irPara(.comprando) { try? contexto.save() }
+            // Regra 12.1. A guarda de "só avança a partir de planejando" mora no modelo,
+            // em `entrouNoModoMercado()`, porque lá ela é testável.
+            if evento.entrouNoModoMercado() { try? contexto.save() }
         }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }

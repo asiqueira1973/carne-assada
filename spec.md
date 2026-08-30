@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Produto** | Carne Assada — planejador e divisor de conta de churrasco |
-| **Versão do documento** | 1.8 |
+| **Versão do documento** | 1.9 |
 | **Autor / responsável de produto** | Alexandre Siqueira (Dab Lab) |
 | **Status** | implementado — MVP construído; pendências de validação em aparelho listadas na seção 26 |
 | **Data** | 29 de agosto de 2026 |
@@ -11,6 +11,7 @@
 | **Mudanças da v1.2** | Compra única cobre todas as releases futuras (regra 11.16.8); copy 15.36; pergunta 25.6 resolvida; seções 24 e 28.0 propagadas |
 | **Mudanças da v1.3** | Ilustrações e ícone do app passam a ser assets fornecidos, não desenhados em código (nova seção 16.7); seções 16.3, 16.6, 17.7, 18.3, 26 e 27 propagadas |
 | **Mudanças da v1.4** | Ilustrações passam de PNG para SVG (16.7, nova regra 16.7.1.1); alvo de binário volta a 30 MB (17.7) |
+| **Mudanças da v1.9** | Primeira leva pós-submissão, para a v1.1 do app. O card da Home **deixa de exibir o status** (10.1). Corrigido bug em que abrir a aba Mercado regredia o status de `fechando_conta` para `comprando` — nova regra **12.1**. Cabeçalho de categoria da tela 10.5 deixa de grudar no topo ao rolar |
 | **Mudanças da v1.8** | Rodada de correção de layout e de toque a partir do teste em aparelho: nova regra **17.6.1** (área de toque real, não só visual) e nova regra **9.2.2** com caminho de saída. Cards de item de compra e de participante reconstruídos em linhas |
 | **Mudanças da v1.7** | A aba Conta bloqueada **é** o paywall, não uma antessala dele (regra 11.16.2 reescrita, seção 10 propagada): as duas telas diziam a mesma coisa e tocar parecia não fazer nada |
 | **Mudanças da v1.6** | Feedback do primeiro teste em aparelho. Sair do modo mercado **nunca** depende de ter marcado tudo, e o item vira removível ali mesmo (8.4, nova regra 11.17). Dica de uso na lista de compras (nova copy 15.37). Paywall deixa de virar beco sem saída quando o produto não carrega da App Store (8.10, nova regra 11.16.9, nova copy 15.38) |
@@ -560,7 +561,7 @@ Perfil único; sem rótulo de perfil. Navegação: `NavigationStack` com Home na
 
 | # | Tela | O que mostra | Ações | Lê | Escreve |
 |---|---|---|---|---|---|
-| 10.1 | **Home / Meus churrascos** | Lista de churrascos por data desc., com nome, data, status e total (quando houver) | Criar, abrir, excluir (swipe) | `churrasco`, `item_compra` | `churrasco` |
+| 10.1 | **Home / Meus churrascos** | Lista de churrascos por data desc., com nome, data e total (quando houver) | Criar, abrir, excluir (swipe) | `churrasco`, `item_compra` | `churrasco` |
 | 10.2 | **Novo churrasco** | Nome e data | Salvar, cancelar | — | `churrasco` |
 | 10.3 | **Descrever a turma** | Campo de texto livre com placeholder e exemplos | Calcular, pular para manual | `churrasco` | `churrasco` |
 | 10.4 | **Parâmetros da turma** | Cinco steppers (adultos, crianças, vegetarianos, não bebem, duração) | Ajustar, confirmar, voltar | `churrasco` | `churrasco` |
@@ -777,6 +778,12 @@ Consequências obrigatórias:
 
 **Proibido:** `planejando` → `concluido` diretamente. **Nenhuma** transição apaga dado.
 
+**12.1 — Transição para trás é sempre manual, nunca efeito colateral.** As duas transições que voltam no fluxo — `comprando → planejando` e `fechando_conta → comprando` — só acontecem por ação explícita do usuário. Nenhuma delas pode ser disparada por uma tela simplesmente aparecer.
+
+Isto virou regra porque foi quebrado na prática: com o modo mercado promovido a aba (divergência 24.14.2), o `onAppear` da tela 10.6 dispara toda vez que o dedo encosta na aba, não uma vez só. O resultado era um churrasco que já estava em `fechando_conta` voltar sozinho para `comprando` só porque o usuário deu uma olhada na lista — exatamente o que a regra 11.15 proíbe. A entrada no modo mercado agora só avança **a partir de `planejando`**.
+
+**Status não é exibido no histórico** (10.1). Ele governa o fluxo — o acesso ao "Como foi?" depende de `concluido` — mas deixou de ser informação de tela: era um dado derivado sobre o qual o usuário não tomava nenhuma decisão, e o sinal que de fato importa no card é o total.
+
 Falhas: erro de persistência mantém o estado anterior e mostra a copy 15.17; nenhuma transição de estado ocorre parcialmente.
 
 ---
@@ -946,6 +953,7 @@ Não há importação de arquivo no MVP.
 - Cards com canto `.rounded(16)`, sombra sutil, sem borda pesada.
 - Espaçamento generoso: mínimo 16 pt de margem lateral, 12 pt entre cards.
 - Densidade **baixa** — este não é um app de tabela. Card em vez de linha compacta, exceto no modo mercado, onde a lista é densa de propósito (mais itens visíveis de uma vez).
+- **Cabeçalho de categoria rola junto com o conteúdo.** Em `List` com `.plain`, um `header` de `Section` gruda no topo e fica parado enquanto os itens passam por baixo, até a próxima seção empurrá-lo. É comportamento de índice, e este app não é um índice — a tela 10.5 renderiza o título como linha comum da lista para rolar naturalmente, igual à 10.6.
 - Ícones de interface (navegação, ações, estados): **SF Symbols apenas** (`flame.fill`, `cart.fill`, `fork.knife`, `takeoutbag.and.cup.and.straw.fill`, `person.2.fill`, `checkmark.circle.fill`). Nenhum asset para ícone de interface.
 - **Ilustrações e ícones de categoria: assets SVG fornecidos** (ver 16.7). Não são desenhados em código e não devem ser substituídos por SF Symbols nem redesenhados pelo agente.
 - O ícone do app é asset fornecido.

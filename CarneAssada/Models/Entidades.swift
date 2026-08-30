@@ -86,6 +86,22 @@ final class churrasco {
         atualizado_em = Date()
         return true
     }
+
+    /// O usuário abriu o modo mercado (tela 10.6) — **regra 12.1**.
+    ///
+    /// Avança para `comprando` somente a partir de `planejando`. A seção 12 também permite
+    /// `fechando_conta → comprando`, mas como transição **manual**; e como o mercado é uma
+    /// aba (divergência 24.14.2), o `onAppear` dispara a cada olhada, não uma vez só. Sem
+    /// esta guarda, ver a lista fazia um churrasco já em `fechando_conta` voltar sozinho
+    /// para `comprando` — que é o que a regra 11.15 proíbe.
+    ///
+    /// A regra vive aqui, e não na view, para poder ser testada.
+    /// - Returns: `true` se o status mudou.
+    @discardableResult
+    func entrouNoModoMercado() -> Bool {
+        guard status == .planejando else { return false }
+        return irPara(.comprando)
+    }
 }
 
 // MARK: - participante (7.3)

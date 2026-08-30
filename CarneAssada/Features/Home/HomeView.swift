@@ -4,7 +4,7 @@ import SwiftData
 /// Tela 10.1 — Home / Meus churrascos.
 ///
 /// Raiz da navegação (`NavigationStack`). Lista os churrascos por data decrescente, com
-/// nome, data, status e total quando houver. Estado vazio com a copy 15.6.
+/// nome, data e total quando houver. Estado vazio com a copy 15.6.
 struct HomeView: View {
 
     @Environment(\.modelContext) private var contexto
@@ -142,7 +142,7 @@ struct HomeView: View {
 
 // MARK: - Card da lista
 
-/// Uma linha da Home: nome, total (quando houver), data e chip de status.
+/// Uma linha da Home: nome, total (quando houver) e data.
 private struct CartaoDeChurrasco: View {
     let evento: churrasco
 
@@ -178,16 +178,14 @@ private struct CartaoDeChurrasco: View {
                     }
                 }
 
-                // Mesmo raciocínio: a data e o chip de status não cabem lado a lado em AX5.
-                let rodape = tamanhoTipografico.isAccessibilitySize
-                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
-                    : AnyLayout(HStackLayout(alignment: .center, spacing: 8))
-
-                rodape {
-                    Text(Formatacao.dataPorExtenso(evento.data_evento))
-                        .estiloLegenda()
-                    Chip(texto: evento.status.rotulo, cor: evento.status.cor)
-                }
+                // O card não mostra mais o status (decisão de produto, v1.1).
+                //
+                // Ele era informação derivada que ninguém usava para decidir nada: o sinal
+                // que importa no histórico é o total, e ele já aparece quando a conta fecha.
+                // O status continua existindo no modelo e governando a máquina de estados
+                // da seção 12 — só deixou de ser exibido aqui.
+                Text(Formatacao.dataPorExtenso(evento.data_evento))
+                    .estiloLegenda()
             }
 
             Image(systemName: "chevron.right")
@@ -200,8 +198,7 @@ private struct CartaoDeChurrasco: View {
         .cartao()
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
-            "\(evento.nome), \(Formatacao.dataPorExtenso(evento.data_evento)), "
-            + "\(evento.status.rotulo)"
+            "\(evento.nome), \(Formatacao.dataPorExtenso(evento.data_evento))"
             + (total.map { ", total \(Formatacao.moeda($0))" } ?? "")
         )
     }

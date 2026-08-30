@@ -190,38 +190,45 @@ struct ListaDeComprasView: View {
     }
 
     /// Uma categoria: ícone de 28 pt (16.7.5), título na cor da categoria (16.2), e os itens.
+    /// Uma categoria: ícone de 28 pt (16.7.5), título na cor da categoria (16.2), e os itens.
+    ///
+    /// O título é uma **linha comum da lista**, não um `header` de `Section`. Em `List` com
+    /// `.plain`, o cabeçalho de seção gruda no topo e fica parado enquanto o conteúdo rola,
+    /// até a próxima seção empurrá-lo — comportamento de índice, que não é o que esta tela
+    /// é. Como linha comum, o título rola junto com os itens, igual ao modo mercado.
+    @ViewBuilder
     private func secao(_ categoria: categoria_lista, itens: [item_lista],
                        deslocamento: Int) -> some View {
-        Section {
-            ForEach(Array(itens.enumerated()), id: \.element.id) { indice, item in
-                LinhaDeItem(item: item)
-                    .contentShape(.rect)
-                    .onTapGesture { itemEmEdicao = item }
-                    // 16.5.2: cascata de cima para baixo, 40 ms entre linhas.
-                    .cascata(indice: deslocamento + indice)
-                    .modifier(LinhaSemFundo())
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) { remover(item) } label: {
-                            Label("Excluir", systemImage: "trash")
-                        }
+        HStack(spacing: 10) {
+            // 16.7.7: o ícone não é tingido. Cores literais, sem `renderingMode(.template)`.
+            Image(categoria.icone)
+                .resizable()
+                .scaledToFit()
+                .frame(width: Metrica.iconeCategoria, height: Metrica.iconeCategoria)
+                .accessibilityHidden(true)
+            Text(categoria.rotulo)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(categoria.cor)
+            Spacer(minLength: 0)
+        }
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .listRowInsets(.init(top: 14, leading: Metrica.margemLateral + 4,
+                             bottom: 2, trailing: Metrica.margemLateral))
+        .accessibilityAddTraits(.isHeader)
+
+        ForEach(Array(itens.enumerated()), id: \.element.id) { indice, item in
+            LinhaDeItem(item: item)
+                .contentShape(.rect)
+                .onTapGesture { itemEmEdicao = item }
+                // 16.5.2: cascata de cima para baixo, 40 ms entre linhas.
+                .cascata(indice: deslocamento + indice)
+                .modifier(LinhaSemFundo())
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) { remover(item) } label: {
+                        Label("Excluir", systemImage: "trash")
                     }
-            }
-        } header: {
-            HStack(spacing: 10) {
-                // 16.7.7: o ícone não é tingido. Cores literais, sem `renderingMode(.template)`.
-                Image(categoria.icone)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: Metrica.iconeCategoria, height: Metrica.iconeCategoria)
-                    .accessibilityHidden(true)
-                Text(categoria.rotulo)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(categoria.cor)
-            }
-            .textCase(nil)
-            .padding(.vertical, 4)
-            .listRowInsets(.init(top: 8, leading: Metrica.margemLateral,
-                                 bottom: 4, trailing: Metrica.margemLateral))
+                }
         }
     }
 

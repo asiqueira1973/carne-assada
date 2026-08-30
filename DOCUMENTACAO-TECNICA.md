@@ -6,7 +6,7 @@ Regra de manutenção: qualquer mudança em modelo, serviço ou lógica de tela 
 
 | | |
 |---|---|
-| Versão do spec implementada | 1.8 |
+| Versão do spec implementada | 1.9 |
 | Plataforma | iOS 26.0+, iPhone, retrato |
 | Stack | Swift 6 (concorrência estrita), SwiftUI, SwiftData, Foundation Models, Vision, StoreKit 2 |
 | Dependências externas | nenhuma |
@@ -157,9 +157,13 @@ Implementado em `status_churrasco.permiteIrPara(_:)` e `churrasco.irPara(_:)`. T
 
 Disparos:
 
+**Regra 12.1: transição para trás é sempre manual.** A entrada no modo mercado avança para `comprando` **somente a partir de `planejando`**. Sem essa guarda, e com o mercado sendo uma aba, cada olhada na lista regredia um churrasco de `fechando_conta` para `comprando` — bug real, reportado em uso.
+
+A guarda mora em `churrasco.entrouNoModoMercado()`, no modelo, e não na view: regra de negócio na view não tem como ser testada. Quatro testes de regressão cobrem os quatro estados de partida.
+
 | Onde | Transição |
 |---|---|
-| `ModoMercadoView.onAppear` | → `comprando` |
+| `ModoMercadoView.onAppear` → `churrasco.entrouNoModoMercado()` | `planejando` → `comprando` (só daí) |
 | `RevisaoDaLeitura.confirmar()` e `LancamentoManualView.criar()` | → `fechando_conta` |
 | `ResultadoView`, ao concluir o compartilhamento | → `concluido` |
 
@@ -296,7 +300,7 @@ Guardrails aplicados **em código**, não no prompt:
 
 ### Home (10.1)
 
-Lista por `data_evento` decrescente. O total do card é a soma dos itens **confirmados e com valor**; quando não há nenhum, o card simplesmente não mostra valor — "R$ 0,00" pareceria uma conta zerada.
+Lista por `data_evento` decrescente. **O card não exibe o status** (decisão de produto da v1.1): era dado derivado sobre o qual o usuário não decidia nada, e o sinal que importa no histórico é o total. `status_churrasco.rotulo` e `.cor` continuam no código, sem uso em tela, como o vocabulário dos estados da seção 12. O total do card é a soma dos itens **confirmados e com valor**; quando não há nenhum, o card simplesmente não mostra valor — "R$ 0,00" pareceria uma conta zerada.
 
 Excluir pede confirmação (é destrutivo, regra 11.12) e cascateia. Erro de persistência mostra a copy 15.17 e mantém o estado anterior.
 
@@ -314,7 +318,7 @@ O toggle de carne suína é escolha do usuário, não do modelo: é preservado a
 
 ### Lista de compras (10.5)
 
-Agrupada por categoria, com o ícone SVG a 28 pt e o título na cor da categoria. Toque edita, swipe remove (sem confirmação — é reversível por re-adição).
+Agrupada por categoria, com o ícone SVG a 28 pt e o título na cor da categoria. O título é uma **linha comum da lista**, não um `header` de `Section`: em `List` com `.plain` o cabeçalho de seção gruda no topo e fica parado enquanto o conteúdo rola. Isso é comportamento de índice, não desta tela — o modo mercado não sofria disso porque usa `.insetGrouped`, que não fixa cabeçalho. Toque edita, swipe remove (sem confirmação — é reversível por re-adição).
 
 Uma dica de uso (copy 15.37) explica os dois gestos, porque num **card** eles não são óbvios: o usuário reconhece "toque para editar, arraste para excluir" numa linha de tabela, não num card solto. Ela some para sempre no primeiro "Entendi", guardado em `AppStorage` — dica permanente vira ruído em quem já aprendeu.
 
@@ -427,13 +431,13 @@ Vale a mesma regra para **dois `.sheet(isPresented:)` na mesma view**: é fragil
 
 ## 8. Testes
 
-43 testes em 6 suítes.
+47 testes em 6 suítes.
 
 | Suíte | Cobre |
 |---|---|
 | `ShoppingListCalculatorTests` | Exemplo trabalhado 11.13 item a item, multiplicadores, arredondamentos, exceção do abstêmio, vegetariano como subconjunto, itens fixos, suíno opcional, ajuste histórico e clamps |
 | `SplitCalculatorTests` | Pesos por categoria, exemplo de rateio 11.13, **propriedade "soma == total" em 100 iterações**, atribuição explícita, empate por ordem e casos de borda |
-| `MaquinaDeEstadosTests` | Transições permitidas e a proibida |
+| `MaquinaDeEstadosTests` | Transições permitidas, a proibida, e a regra 12.1 (entrar no mercado não regride quem já está fechando a conta ou concluído) |
 | `ModeloTests` | Cascata de exclusão, criança sem álcool, valor negativo zerado, `entra_no_rateio`, recálculo preservando manuais |
 | `ShareTextBuilderTests` | Formato exato da 14.1 e não vazamento de item ou estabelecimento |
 | `AjusteConsumoTests` | Serialização e JSON corrompido |
@@ -456,6 +460,7 @@ Sem esta seção o documento envelhece mentindo. Todas estão também na seção
 | 6 | Telas de lista usam `List`, não `ScrollView` + `LazyVStack` | `swipeActions` **só funciona dentro de uma `List`**; fora dela é ignorado em silêncio. O visual de card é preservado escondendo fundo e separador |
 | 7 | O título grande da barra de navegação trunca em AX5 | Comportamento do próprio iOS, igual ao dos apps da Apple. Todo o **conteúdo** das telas respeita o critério 8.11 |
 | 8 | O rateio não é gravado; é recalculado a cada leitura | Garante que a exceção 9.2.7 nunca deixe valor velho em tela |
+| 14 | O card da Home não exibe status (v1.1) | Decisão de produto: dado derivado que não gerava decisão. O total já é o sinal do histórico |
 | 13 | Um `.sheet(item:)` na tela 10.7, em vez de dois `.sheet(isPresented:)` | Dois `.sheet` na mesma view podem não apresentar, sem erro |
 | 12 | Cards de item e de participante em linhas empilhadas, não campos lado a lado | Lado a lado o picker quebrava e as linhas se sobrepunham. Ver a seção 6.1 |
 | 11 | Atalho de liberação da conta em `#if DEBUG`, na tela de Ajustes | Permite exercitar o rateio em aparelho enquanto `carne_assada_pro` não existe no App Store Connect. Verificado por `strings` que não aparece no binário de Release. Remover quando o produto existir |
